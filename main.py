@@ -8,12 +8,15 @@ class Population():
     # счётчик живых разбойников:
     how_many_rogues_alive = 0
 
+    # счётчик поколений:
+    generations = 0
+
 
     # при создании популяции сразу же наполнить её:
     def __init__(self, total):
         while total > 0:
             # создать нового разбойника, передав "пустой генотип" и отметку о том, что ему нужно сгенерировать гены:
-            new_rogue = Rogue('', False)
+            new_rogue = Rogue('', False, 0)
 
             # пополнить список разбойников:
             ROGUES_LIST.append(new_rogue)
@@ -23,7 +26,8 @@ class Population():
 
     # вывести актуальную информацию о популяции:
     def __str__(self):
-        text = 'Популяция\n'
+        text = 'Популяция:\n'
+        text += 'поколений: ' + str(self.generations) + '\n'
         text += 'всего субъектов: ' + str(self.how_many_rogues) + '\n'
         text += 'живых субъектов: ' + str(self.how_many_rogues_alive) + '\n'
 
@@ -35,13 +39,18 @@ class Rogue():
     """Класс описывает механику тестируемого персонажа."""
 
     # при создании экземпляра:
-    def __init__(self, gens_list, from_parent):
+    def __init__(self, gens_list, from_parent, parent_generation):
 
         # строки с предыдущего проекта...
 
         # статистические счётчики:
         Population.how_many_rogues += 1
         Population.how_many_rogues_alive += 1
+
+        # номер поколения:
+        self.my_generation = parent_generation + 1
+        if self.my_generation > Population.generations:
+            Population.generations = self.my_generation
 
         # жив ли:
         self.alive = True
@@ -94,7 +103,7 @@ class Rogue():
 
     # родить нового разбойника:
     def spawn_new_rogue(self, parent_gens, from_parent):
-        new_rogue = Rogue(self.my_gens, True)
+        new_rogue = Rogue(self.my_gens, True, self.my_generation)
         ROGUES_LIST.append(new_rogue)
 
 
@@ -113,7 +122,7 @@ def perform_challenges_serie():
     pass
     # цикл - пока не достигнут верх популяции
     counter = 0
-    while counter < population.how_many_rogues_alive:
+    while counter < Population.how_many_rogues_alive:
         pass
 
 
@@ -140,12 +149,12 @@ if __name__ == '__main__':
     ROGUES_LIST = list()
 
     # создать объект популяции и наполнить его разбойниками в указанном количестве:
-    population = Population(3)
+    new_population = Population(3)
 
     #ROGUES_LIST[2].die()
 
     # "прочитать" популяцию:
-    print(population)
+    print(new_population)
 
 else:
     print('__name__ is not "__main__".')
