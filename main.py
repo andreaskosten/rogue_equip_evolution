@@ -116,6 +116,9 @@ class Rogue():
         else:
             self.my_genes = genes_list_inherited
 
+        # отобразить эти гены в статистике:
+        stats.genes_add_presence(self.my_genes)
+
         # надеть экипировку согласно полученным генам:
         self.apply_genes(dbg=True)
 
@@ -291,6 +294,8 @@ class Rogue():
     def do_win(self):
         self.my_wins += 1
 
+        stats.genes_add_win(self.my_genes)
+
         # после каждой второй победы:
         if self.my_wins % 2 == 0:
             # родить разбойника-потомка:
@@ -444,13 +449,38 @@ def perform_challenge(rogue_1, rogue_2, dbg=False):
         if dbg:
             print('\tО чудо! Произошла ничья!')
 
+class Stats:
 
+    # добавить новый ген в словарь и/или добавить 1 в счётчик его присутствия в популяции:
+    def genes_add_presence(self, genes):
+        global DICT_GENES
+        genes_str = '-'.join(map(str, genes))
+        DICT_GENES.setdefault(genes_str, (0, 0))
+        a, b = DICT_GENES[genes_str]
+        DICT_GENES[genes_str] = (a + 1, b)
+
+    # добавить 1 в счётчик присутствия гена в популяции:
+    def genes_add_win(self, genes):
+        global DICT_GENES
+        genes_str = '-'.join(map(str, genes))
+        a, b = DICT_GENES[genes_str]
+        DICT_GENES[genes_str] = (a, b + 1)
+
+    def add_new_day(self, day_number):
+        global DICT_DAYS
+        DICT_DAYS.setdefault(day_number, (population.how_many_rogues, population.how_many_rogues_alive))
 
 # КОНСТАНТЫ:
 GENES_CHAIN_LENGTH = 0  # <-- длина цепочки генов (должна совпадать с количеством словарей экипировки)
 
 # создать список ссылок на словари:
 LINKS_TO_EQUIP_DICTS = [RIGHT_HANDS, LEFT_HANDS, GLOVES, HEADS, CHESTS, PANTS, BOOTS]
+
+# словарь для хранения статистики по генам:
+DICT_GENES = {}
+
+# словарь для хранения статистики по дням:
+DICT_DAYS = {}
 
 #print(LINKS_TO_EQUIP_DICTS[0])
 #print(LINKS_TO_EQUIP_DICTS[0][1])
@@ -463,8 +493,11 @@ ROGUES_LIST = list()
 # ЗАПУСК:
 if __name__ == '__main__':
 
+    # создать объект для учёта разной статистики:
+    stats = Stats()
+
     # создать объект популяции и наполнить его разбойниками в указанном количестве:
-    population = Population(6)
+    population = Population(20)
 
     #ROGUES_LIST[1].die()
     #ROGUES_LIST[0].do_win()
@@ -474,7 +507,7 @@ if __name__ == '__main__':
     print(population)
 
     current = 1
-    max = 100
+    max = 200
     while current <= max:
         print('\n\nДЕНЬ/DAY', current)
         perform_challenges_serie()
@@ -482,7 +515,19 @@ if __name__ == '__main__':
         print('\nДень', current, 'завершён.')
         print(population)
 
+        # статистика для этого дня:
+        stats.add_new_day(current)
+
         current += 1
+
+    # вывести статистику генов:
+    print('Уникальных генов', len(DICT_GENES), ', вот они:')
+    print(DICT_GENES)
+
+    # вывести статистику дней:
+    print('Дни:')
+    print(DICT_DAYS)
+
 
 else:
     print('__name__ is not "__main__".')
