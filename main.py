@@ -397,59 +397,63 @@ class Rogue():
         return description
 
 
-# провести череду соревнований:
-def perform_challenges_serie():
+class Challenger():
 
-    # создать список живых разбойников:
-    rogues_alive = []
-    for x in ROGUES_LIST:
-        if x.alive:
-            rogues_alive.append(x)
+    # провести череду соревнований:
+    def perform_serie(self):
 
-    # перемешать список:
-    shuffle(rogues_alive)
+        # создать список живых разбойников:
+        rogues_alive = []
+        for x in ROGUES_LIST:
+            if x.alive:
+                rogues_alive.append(x)
 
-    # получить количество пар живых разбойников в популяции:
-    pairs_total = int(len(rogues_alive) // 2)
+        # перемешать список:
+        shuffle(rogues_alive)
 
-    print('pairs_total =', pairs_total)
+        # получить количество пар живых разбойников в популяции:
+        pairs_total = int(len(rogues_alive) // 2)
 
-    # запускать бои между соседними по списку разбойниками:
-    counter = 0
-    pointer = 0
-    while counter < pairs_total:
-        a_1 = rogues_alive[pointer]
-        a_2 = rogues_alive[pointer + 1]
-        #print('новая пара:', a_1.name, 'и', a_2.name)
-        perform_challenge(a_1, a_2, dbg=True)
-        counter += 1
-        pointer += 2
+        print('pairs_total =', pairs_total)
+
+        # запускать бои между соседними по списку разбойниками:
+        counter = 0
+        pointer = 0
+        while counter < pairs_total:
+            a_1 = rogues_alive[pointer]
+            a_2 = rogues_alive[pointer + 1]
+            #print('новая пара:', a_1.name, 'и', a_2.name)
+            self.perform_one(a_1, a_2, dbg=True)
+            counter += 1
+            pointer += 2
 
 
-# провести соревнование между двумя разбойниками:
-def perform_challenge(rogue_1, rogue_2, dbg=False):
-    if dbg:
-        print('\nновое соревнование между:', rogue_1.name, 'и', rogue_2.name)
-
-    # рассчитать рейтинг каждого разбойника (в более совершенной симуляции тут может быть полноценное сражение):
-    rating_1 = rogue_1.calculate_rate(dbg=False)
-    rating_2 = rogue_2.calculate_rate(dbg=False)
-
-    if dbg:
-        print('\tих рейтинг:', rating_1, 'и', rating_2, 'соответственно.')
-
-    # раскидать очки между победителем и проигравшим:
-    if rating_1 > rating_2:
-        rogue_1.do_win()
-        rogue_2.do_defeat(dbg=True)
-    elif rating_1 < rating_2:
-        rogue_1.do_defeat(dbg=True)
-        rogue_2.do_win()
-    else:
+    # провести соревнование между двумя разбойниками:
+    def perform_one(self, rogue_1, rogue_2, dbg=False):
         if dbg:
-            print('\tО чудо! Произошла ничья!')
+            print('\nновое соревнование между:', rogue_1.name, 'и', rogue_2.name)
 
-class Stats:
+        # рассчитать рейтинг каждого разбойника (в более совершенной симуляции тут может быть полноценное сражение):
+        rating_1 = rogue_1.calculate_rate(dbg=False)
+        rating_2 = rogue_2.calculate_rate(dbg=False)
+
+        if dbg:
+            print('\tих рейтинг:', rating_1, 'и', rating_2, 'соответственно.')
+
+        # раскидать очки между победителем и проигравшим:
+        if rating_1 > rating_2:
+            rogue_1.do_win()
+            rogue_2.do_defeat(dbg=True)
+        elif rating_1 < rating_2:
+            rogue_1.do_defeat(dbg=True)
+            rogue_2.do_win()
+        else:
+            if dbg:
+                print('\tО чудо! Произошла ничья!')
+
+
+# класс для управления статистикой:
+class Stats():
 
     # добавить новый ген в словарь и/или добавить 1 в счётчик его присутствия в популяции:
     def genes_add_presence(self, genes):
@@ -470,6 +474,7 @@ class Stats:
         global DICT_DAYS
         DICT_DAYS.setdefault(day_number, (population.how_many_rogues, population.how_many_rogues_alive))
 
+
 # КОНСТАНТЫ:
 GENES_CHAIN_LENGTH = 0  # <-- длина цепочки генов (должна совпадать с количеством словарей экипировки)
 
@@ -482,26 +487,22 @@ DICT_GENES = {}
 # словарь для хранения статистики по дням:
 DICT_DAYS = {}
 
-#print(LINKS_TO_EQUIP_DICTS[0])
-#print(LINKS_TO_EQUIP_DICTS[0][1])
-#print(LINKS_TO_EQUIP_DICTS[0][1][0])
-
 # создать список, где будут храниться ссылки на всех разбойников:
 ROGUES_LIST = list()
+
+# создать объект для учёта разной статистики:
+stats = Stats()
+
 
 
 # ЗАПУСК:
 if __name__ == '__main__':
 
-    # создать объект для учёта разной статистики:
-    stats = Stats()
-
     # создать объект популяции и наполнить его разбойниками в указанном количестве:
     population = Population(20)
 
-    #ROGUES_LIST[1].die()
-    #ROGUES_LIST[0].do_win()
-    #ROGUES_LIST[0].do_win()
+    # создать объект для управления состязаниями:
+    challenger = Challenger()
 
     # "прочитать" популяцию:
     print(population)
@@ -510,7 +511,7 @@ if __name__ == '__main__':
     max = 200
     while current <= max:
         print('\n\nДЕНЬ/DAY', current)
-        perform_challenges_serie()
+        challenger.perform_serie()
 
         print('\nДень', current, 'завершён.')
         print(population)
@@ -527,7 +528,6 @@ if __name__ == '__main__':
     # вывести статистику дней:
     print('Дни:')
     print(DICT_DAYS)
-
 
 else:
     print('__name__ is not "__main__".')
