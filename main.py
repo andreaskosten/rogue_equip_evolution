@@ -3,7 +3,7 @@ from datetime import datetime
 from time import time, sleep
 
 # для некоторых операций:
-from random import randrange, randint, choice
+from random import randrange, randint, choice, shuffle
 
 # импортировать другие файлы проекта:
 from operations_with_files import *
@@ -21,7 +21,7 @@ class Population():
     """Класс используется для удобной работы с популяцией"""
 
     # счётчик всех разбойников:
-    how_many_rogues = 1
+    how_many_rogues = 0
 
     # счётчик живых разбойников:
     how_many_rogues_alive = 0
@@ -29,13 +29,19 @@ class Population():
     # счётчик поколений:
     generations = 0
 
+    # рекорд количества побед у одного разбойника в популяции, а также его имя и гены:
+    record_max_wins = 0
+    max_winner_name = 'none'
+    max_winner_genes = 'none'
+
+
 
     # при создании популяции сразу же наполнить её:
-    def __init__(self, total):
+    def __init__(self, total, dbg=False):
         while total > 0:
 
             # создать нового разбойника, передав "пустой генотип" и отметку о том, что ему нужно сгенерировать гены:
-            new_rogue = Rogue('', 0, from_parent=False, rogues_counter=str(self.how_many_rogues))
+            new_rogue = Rogue('', 0, from_parent=False)
 
             # пополнить список разбойников:
             ROGUES_LIST.append(new_rogue)
@@ -49,7 +55,9 @@ class Population():
         text += 'поколений: ' + str(self.generations) + '\n'
         text += 'всего субъектов: ' + str(self.how_many_rogues) + '\n'
         text += 'живых субъектов: ' + str(self.how_many_rogues_alive) + '\n'
-
+        text += 'рекорд побед: ' + str(self.record_max_wins) + '\n'
+        text += 'имя рекордсмена: ' + str(self.max_winner_name) + '\n'
+        text += 'генотип рекордсмена: ' + str(self.max_winner_genes) + '\n'
         return text
 
 
@@ -58,7 +66,7 @@ class Rogue():
     """Класс описывает механику тестируемого персонажа."""
 
     # при создании экземпляра:
-    def __init__(self, genes_list_inherited, parent_generation, from_parent=True, rogues_counter='error'):
+    def __init__(self, genes_list_inherited, parent_generation, from_parent=True, genes_can_mutate=True):
 
         # инициализация списка слотов экипировки, который должен содержать id надетых предметов:
         # 0 - правая рука, 1 - левая рука, 2 - перчатки, 3 - голова, 4 - грудь, 5 - штаны, 6 - обувь
@@ -77,9 +85,6 @@ class Rogue():
         # рассчитать текущие характеристики без вещей:
         self.set_stats_without_equip()
 
-        # "имя" разбойника:
-        self.name = rogues_counter + '-й, из поколения ' + str(parent_generation+1)
-
         # статистические счётчики:
         Population.how_many_rogues += 1
         Population.how_many_rogues_alive += 1
@@ -88,6 +93,9 @@ class Rogue():
         self.my_generation = parent_generation + 1
         if self.my_generation > Population.generations:
             Population.generations = self.my_generation
+
+        # "имя" разбойника:
+        self.name = '"' + str(Population.how_many_rogues) + '-й, из поколения ' + str(parent_generation + 1) + '"'
 
         # жив ли:
         self.alive = True
@@ -99,11 +107,14 @@ class Rogue():
         # инициализировать цепочку генов:
         self.my_genes = [0] * 7
 
-        # если этот разбойник порождён другим разбойником, его гены должны незначительно мутировать:
-        if from_parent:
-            self.mutate_genes(genes_list_inherited, dbg=True)
+        if genes_can_mutate:
+            # если этот разбойник порождён другим разбойником, его гены должны незначительно мутировать:
+            if from_parent:
+                self.mutate_genes(genes_list_inherited, dbg=True)
+            else:
+                self.generate_random_genes(dbg=True)
         else:
-            self.generate_random_genes(dbg=True)
+            self.my_genes = genes_list_inherited
 
         # надеть экипировку согласно полученным генам:
         self.apply_genes(dbg=True)
@@ -129,6 +140,33 @@ class Rogue():
     # метод для расчёта шанса скользящего удара:
     def calculate_glancing_percent(self):
         self.stat_glancing_percent = 40 - self.stat_mastery * 4
+
+
+    # метод для расчёта собственного рейтинга:
+    def calculate_rate(self, dbg=False):
+        # вычислить вероятность попадания:
+        p_hit = self.stat_hit / 100
+
+        # вычислить вероятность скользящего и НЕскользящего удара:
+        p_glancing = self.stat_glancing_percent / 100
+        not_p_glancing = 1 - self.stat_glancing_percent / 100
+
+        # вычислить вероятность критического и НЕкритического удара:
+        p_crit = self.stat_crit / 100
+        not_p_crit = 1 - self.stat_crit / 100
+
+        # вычислить ожидание модификатора:
+        expectation_modificator = p_hit * (p_glancing * 0.7 + not_p_glancing * (p_crit * 2 + not_p_crit))
+
+        # вычислить ожидание урона с таким модификатором:
+        expectation_damage = expectation_modificator * self.stat_attackpower
+        expectation_damage = round(expectation_damage, 3)
+
+        if dbg:
+            print('\tожидание модификатора =', expectation_modificator)
+            print('\tожидание урона =', expectation_damage)
+
+        return expectation_damage
 
 
     # сгенерировать случайный набор генов:
@@ -166,18 +204,16 @@ class Rogue():
 
         # если мутация должна произойти:
         else:
-            # определить "силу" мутации = количество мутировавших генов:
+            # определить "силу" мутации = количество генов, которые должны мутировать:
             mutation_volume = randint(0, 30)
             mutation_iters = 1
-            if 16 <= mutation_volume <= 28:
+            if 22 <= mutation_volume <= 28:
                 mutation_iters = 2
             elif 29 <= mutation_volume <= 30:
                 mutation_iters = 3
 
-            mutation_iters = 5
-
             if dbg:  # для отладки:
-                print('\nf "mutate_genes" begins:' + '\n\tmutation_iters (мутаций запланировано): ' + str(mutation_iters))
+                print('\nf "mutate_genes" begins:' + '\n\tмутаций запланировано: ' + str(mutation_iters))
 
             # список генов, доступных для мутации:
             genes_available = [0, 1, 2, 3, 4, 5, 6]
@@ -189,7 +225,11 @@ class Rogue():
             while current_iter < mutation_iters:
                 if dbg:  # для отладки:
                     print('\tw1')
+
+                # выбрать случайный ген из доступных:
                 gene_with_forced_mutation = choice(genes_available)
+
+                # если этот ген ещё не мутировал:
                 if gene_with_forced_mutation not in genes_mutated:
                     self.mutate_gene(gene_with_forced_mutation, dbg=True)
                     genes_mutated.append(gene_with_forced_mutation)
@@ -198,7 +238,7 @@ class Rogue():
                         print('\tcurrent_iter =', current_iter)
                 else:
                     if dbg:  # для отладки:
-                        print('\telse, because ' + str(gene_with_forced_mutation) + ' not in genes_mutated')
+                        print('\telse, because ' + str(gene_with_forced_mutation) + ' already in genes_mutated')
 
         if dbg:  # для отладки:
             genes_mutated_str = ''
@@ -224,7 +264,7 @@ class Rogue():
 
         tries = 0
         while new_value == current_value:
-            if dbg:  # для отладки:
+            if dbg and tries > 0:  # для отладки:
                 print('\tw2, because ' + str(new_value) + ' = ' + str(current_value) )
             new_value = randrange(0, len(LINKS_TO_EQUIP_DICTS[gene_id]))
             self.my_genes[gene_id] = new_value
@@ -233,13 +273,10 @@ class Rogue():
         if dbg:  # для отладки:
             print('\tnew gene value: ' + str(new_value) + '\n\ttries: ' + str(tries))
 
-        #if dbg:  # для отладки:
-        #    print('\nf "mutate_gene":' + '\n\tgene_id: ' + str(gene_id) + '\n\told gene value: ' + str(
-        #        current_value) + '\n\tnew gene value: ' + str(new_value) + '\n\ttries: ' + str(tries))
-
 
     # "применить" гены путём надевания обусловленной ими экипировки:
     def apply_genes(self, dbg=False):
+        #global LINKS_TO_EQUIP_DICTS
         pointer = 0
         for item_id in self.my_genes:
             self.wear_item(pointer, item_id, LINKS_TO_EQUIP_DICTS[pointer], dbg=True)
@@ -253,24 +290,31 @@ class Rogue():
     # оформить победу в дуэли:
     def do_win(self):
         self.my_wins += 1
+
+        # после каждой второй победы:
         if self.my_wins % 2 == 0:
             # родить разбойника-потомка:
-            print('разбойник ' + self.name + ' рожает потомка...')
-            new_rogue = Rogue(self.my_genes, self.my_generation, from_parent=True, rogues_counter=str(Population.how_many_rogues))
+            print(self.name + ' рожает потомка...')
+            new_rogue = Rogue(self.my_genes, self.my_generation, from_parent=True)
             ROGUES_LIST.append(new_rogue)
+
+        # обновить рекорд количества побед у одного разбойника в популяции:
+        if self.my_wins > Population.record_max_wins:
+            Population.record_max_wins = self.my_wins
+            Population.max_winner_name = self.name
+            Population.max_winner_genes = self.my_genes
 
 
     # оформить поражение в дуэли:
-    def do_defeat(self):
+    def do_defeat(self, dbg=False):
         self.my_defeats += 1
+
+        # после двух поражений выпилиться:
         if self.my_defeats == 2:
-            self.die()
-
-
-    # погибнуть:
-    def die(self):
-        self.alive = False
-        Population.how_many_rogues_alive -= 1
+            self.alive = False
+            Population.how_many_rogues_alive -= 1
+            if dbg:
+                print(self.name + ' выпиливается...')
 
 
     def wear_item(self, slot, item_id, items_list, dbg=False):
@@ -323,9 +367,21 @@ class Rogue():
             using_equipment_names += self.equipment_names[i] + '", "'
         using_equipment_names = '"' + using_equipment_names + self.equipment_names[-1] + '"'
 
+        # выписать в строку гены:
+        cnt = 0
+        genes_str = ''
+        for x in self.my_genes:
+            if cnt != len(self.my_genes) - 1:
+                genes_str += str(x) + ', '
+            else:
+                genes_str += str(x)
+        cnt += 1
+
         # удобочитаемый текст:
-        description = 'Разбойник по имени "' + self.name +'"\n'
+        description = 'Разбойник по имени ' + self.name +'\n'
+        description += 'гены: ' + genes_str + '\n'
         description += using_equipment_names + '\n'
+        description += 'рейтинг: ' + str(self.calculate_rate()) + ' очк.\n'
         description += 'сила атаки: ' + str(self.stat_attackpower) + ' ед.\n'
         description += 'ловкость: ' + str(self.stat_agility) + ' ед.\n'
         description += 'сила: ' + str(self.stat_power) + ' ед.\n'
@@ -338,55 +394,95 @@ class Rogue():
 
 # провести череду соревнований:
 def perform_challenges_serie():
-    pass
-    # цикл - пока не достигнут верх популяции
+
+    # создать список живых разбойников:
+    rogues_alive = []
+    for x in ROGUES_LIST:
+        if x.alive:
+            rogues_alive.append(x)
+
+    # перемешать список:
+    shuffle(rogues_alive)
+
+    # получить количество пар живых разбойников в популяции:
+    pairs_total = int(len(rogues_alive) // 2)
+
+    print('pairs_total =', pairs_total)
+
+    # запускать бои между соседними по списку разбойниками:
     counter = 0
-    while counter < Population.how_many_rogues_alive:
-        pass
+    pointer = 0
+    while counter < pairs_total:
+        a_1 = rogues_alive[pointer]
+        a_2 = rogues_alive[pointer + 1]
+        #print('новая пара:', a_1.name, 'и', a_2.name)
+        perform_challenge(a_1, a_2, dbg=True)
+        counter += 1
+        pointer += 2
 
 
 # провести соревнование между двумя разбойниками:
-def perform_challenge(rogue_1, rogue_2):
-    sum_of_damage_1 = rogue_1.do_battle()
-    sum_of_damage_2 = rogue_2.do_battle()
+def perform_challenge(rogue_1, rogue_2, dbg=False):
+    if dbg:
+        print('\nновое соревнование между:', rogue_1.name, 'и', rogue_2.name)
+
+    # рассчитать рейтинг каждого разбойника (в более совершенной симуляции тут может быть полноценное сражение):
+    rating_1 = rogue_1.calculate_rate(dbg=False)
+    rating_2 = rogue_2.calculate_rate(dbg=False)
+
+    if dbg:
+        print('\tих рейтинг:', rating_1, 'и', rating_2, 'соответственно.')
 
     # раскидать очки между победителем и проигравшим:
-    if sum_of_damage_1 > sum_of_damage_2:
+    if rating_1 > rating_2:
         rogue_1.do_win()
-        rogue_2.do_defeat()
-    elif sum_of_damage_1 < sum_of_damage_2:
-        rogue_1.do_defeat()
+        rogue_2.do_defeat(dbg=True)
+    elif rating_1 < rating_2:
+        rogue_1.do_defeat(dbg=True)
         rogue_2.do_win()
     else:
-        print('О чудо! Произошла ничья!')
+        if dbg:
+            print('\tО чудо! Произошла ничья!')
+
+
+
+# КОНСТАНТЫ:
+GENES_CHAIN_LENGTH = 0  # <-- длина цепочки генов (должна совпадать с количеством словарей экипировки)
+
+# создать список ссылок на словари:
+LINKS_TO_EQUIP_DICTS = [RIGHT_HANDS, LEFT_HANDS, GLOVES, HEADS, CHESTS, PANTS, BOOTS]
+
+#print(LINKS_TO_EQUIP_DICTS[0])
+#print(LINKS_TO_EQUIP_DICTS[0][1])
+#print(LINKS_TO_EQUIP_DICTS[0][1][0])
+
+# создать список, где будут храниться ссылки на всех разбойников:
+ROGUES_LIST = list()
 
 
 # ЗАПУСК:
 if __name__ == '__main__':
 
-    # КОНСТАНТЫ:
-    GENES_CHAIN_LENGTH = 0  # <-- длина цепочки генов (должна совпадать с количеством словарей экипировки)
-
-    # кроме этого, создать список ссылок на эти словари:
-    LINKS_TO_EQUIP_DICTS = [RIGHT_HANDS, LEFT_HANDS, GLOVES, HEADS, CHESTS, PANTS, BOOTS]
-
-    #print(LINKS_TO_EQUIP_DICTS[0])
-    #print(LINKS_TO_EQUIP_DICTS[0][1])
-    #print(LINKS_TO_EQUIP_DICTS[0][1][0])
-
-    # создать список, где будут храниться ссылки на всех разбойников:
-    ROGUES_LIST = list()
-
     # создать объект популяции и наполнить его разбойниками в указанном количестве:
-    new_population = Population(2)
+    population = Population(6)
 
-    #ROGUES_LIST[2].die()
-
-    ROGUES_LIST[0].do_win()
-    ROGUES_LIST[0].do_win()
+    #ROGUES_LIST[1].die()
+    #ROGUES_LIST[0].do_win()
+    #ROGUES_LIST[0].do_win()
 
     # "прочитать" популяцию:
-    #print(new_population)
+    print(population)
+
+    current = 1
+    max = 100
+    while current <= max:
+        print('\n\nДЕНЬ/DAY', current)
+        perform_challenges_serie()
+
+        print('\nДень', current, 'завершён.')
+        print(population)
+
+        current += 1
 
 else:
     print('__name__ is not "__main__".')
