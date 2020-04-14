@@ -1,0 +1,29 @@
+<html>
+<head>
+<title>created automatically</title>
+<link rel="shortcut icon" href="logo.png">
+<meta http-equiv="Cache-Control" content="private"; charset="utf-8">
+
+<style>
+body {
+    background-color: #fff;
+    margin: 0px;
+}
+
+#genotype_field {
+    margin: 50px 12px 100px 12px;
+}
+
+.sq_genotype {
+    display: inline-block;
+    margin: 3px;
+    width: 10px;
+    height: 10px;
+}
+.sq_genotype:hover {
+    filter: brightness(1.2);
+}
+
+</style>
+</head>
+<body>
