@@ -471,7 +471,7 @@ class Stats():
             self.genotypes_total *= len(current_dict_for_equip)
         # print('генотипов всего:', genotypes_total)
 
-        # список возможных генотипов:
+        # создать список возможных генотипов:
         self.list_of_possible_genotypes = list()
 
         # для каждого оружия в правой руке:
@@ -492,8 +492,8 @@ class Stats():
                                     self.list_of_possible_genotypes.append(current_genotype)
         #print(self.list_of_possible_genotypes)
 
-        # нужно вычислить размеры прямоугольной области, максимально приближенной по размерам к квадрату, где Ширина * Длина = Сумма генотипов:
 
+        # нужно вычислить размеры прямоугольной области, максимально приближенной по размерам к квадрату, где Ширина * Длина = Сумма генотипов:
         # для этого нужно выписать в список все делители числа-суммы генотипов:
         list_divisors = list()
         current_number = int(self.genotypes_total // 2)
@@ -514,6 +514,23 @@ class Stats():
         self.side_x = int(side_1 if side_1 >= side_2 else side_2)
         self.side_y = int(self.genotypes_total / self.side_x)
         print('side_x =', self.side_x, 'side_y =', self.side_y)
+
+
+        # объявить набор цветов для поля генотипов:
+        self.green = [''] * 11
+        self.green[1] = '62eace'
+        self.green[2] = '4be7c8'
+        self.green[3] = '35e3c1'
+        self.green[4] = '1fe0ba'
+        self.green[5] = '1ccaa7'
+        self.green[6] = '18b495'
+        self.green[7] = '159d82'
+        self.green[8] = '12876f'
+        self.green[9] = '0f705d'
+        self.green[10] = '0c5a4a'
+
+        # прочесть в память набор тегов для того, чтобы файлы с полями генотипов можно было открывать отдельно:
+        self.autonomous_tags = read_file('autonomous_tags.txt')
 
 
     # метод: добавить новый ген в словарь и/или добавить 1 в счётчик его присутствия в популяции:
@@ -564,23 +581,29 @@ class Stats():
 
                 # если генотип уже появлялся в популяции, добавить цвет квадратику:
                 if genotype_id in DICT_GENOTYPES:
-                    color = 'green'
+                    color = '#8e44ad'
+                    if DICT_GENOTYPES[genotype_id][0] == 0:
+                        color = '#c0392b'
+                    elif 0 < DICT_GENOTYPES[genotype_id][0] <= 10:
+                        color = '#' + self.green[ DICT_GENOTYPES[genotype_id][0] ]
+                    else:
+                        color = '#0033cc'
                 else:
-                    color = 'grey'
+                    color = '#e2e8e9'
 
                 # добавить очередной квадратик-генотип в текущую строку:
-                current_row += '<span class="sq_genotype ' + color + '" id="' + genotype_id + '"></span>'
+                current_row += '<span class="sq_genotype" id="' + genotype_id + '" style="background-color: ' + color + '"></span>'
 
             # когда вся строка сформирована, добавить её в код всей области:
-            HTML_genotype_field += current_row + '<br>'
+            HTML_genotype_field += current_row + '<br>\n'
 
         # закончить оформление области:
-        HTML_genotype_field = '<div id="genotype_field">' + HTML_genotype_field + '</div>'
+        HTML_genotype_field = '\n\n<div id="genotype_field">\n' + HTML_genotype_field + '</div>\n'
 
         # если нужно иметь возможность открыть этот файл отдельно, то добавить недостающие теги:
         if create_autonomous_version:
-            autonomous_tags_1 = read_file('autonomous_tags.txt')
-            autonomous_tags_2 = '</body></html>'
+            autonomous_tags_1 = self.autonomous_tags
+            autonomous_tags_2 = '\n</body>\n</html>'
             HTML_genotype_field = autonomous_tags_1 + HTML_genotype_field + autonomous_tags_2
 
         # сохранить область в файл, который потом будет считываться через файл index.html:
