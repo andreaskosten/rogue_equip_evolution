@@ -8,3 +8,11 @@ def save_data_to_file(filename, data):
 def append_data_to_file(filename, data):
     with open(filename, 'a+', encoding='utf8') as f:
         print(data, file=f)
+
+
+# прочитать указанный файл:
+def read_file(filename):
+    file_text = ''
+    with open(filename, 'r', encoding='utf8') as f:
+        file_text += f.read()
+    return file_text
