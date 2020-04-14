@@ -16,9 +16,10 @@ from equipment_custom import *
 #from equipment_obvious_weak import *
 
 
+
 # класс Популяции
 class Population():
-    """Класс используется для удобной работы с популяцией"""
+    """Класс используется для удобной работы с популяцией."""
 
     # счётчик всех разбойников:
     how_many_rogues = 0
@@ -61,9 +62,10 @@ class Population():
         return text
 
 
+
 # класс Разбойника
 class Rogue():
-    """Класс описывает механику тестируемого персонажа."""
+    """Класс описывает механику тестируемого персонажа, а также управляет его генами."""
 
     # при создании экземпляра:
     def __init__(self, genes_list_inherited, parent_generation, from_parent=True, genes_can_mutate=True):
@@ -397,7 +399,10 @@ class Rogue():
         return description
 
 
+
+# класс Столкновений
 class Challenger():
+    """Класс обеспечивает проведение столкновений между случайными разбойниками."""
 
     # провести череду соревнований:
     def perform_serie(self):
@@ -452,54 +457,162 @@ class Challenger():
                 print('\tО чудо! Произошла ничья!')
 
 
-# класс для управления статистикой:
+
+# класс Статистики:
 class Stats():
+    """Класс обеспечивает сбор и визуализацию статистики."""
 
-    # добавить новый ген в словарь и/или добавить 1 в счётчик его присутствия в популяции:
+    # при инициализации нужно подготовить некоторые данные, которые затем неоднократно понадобятся:
+    def __init__(self):
+
+        # подсчитать количество возможных генотипов:
+        self.genotypes_total = 1
+        for current_dict_for_equip in LINKS_TO_EQUIP_DICTS:
+            self.genotypes_total *= len(current_dict_for_equip)
+        # print('генотипов всего:', genotypes_total)
+
+        # список возможных генотипов:
+        self.list_of_possible_genotypes = list()
+
+        # для каждого оружия в правой руке:
+        for g1 in RIGHT_HANDS:
+            # для каждого оружия в левой руке:
+            for g2 in LEFT_HANDS:
+                # для каждых перчаток:
+                for g3 in GLOVES:
+                    # для каждого шлема:
+                    for g4 in HEADS:
+                        # для каждого нагрудника:
+                        for g5 in CHESTS:
+                            # для каждых штанов:
+                            for g6 in PANTS:
+                                # для каждой обуви:
+                                for g7 in BOOTS:
+                                    current_genotype = str(g1-1)+'-'+str(g2-1)+'-'+str(g3-1)+'-'+str(g4-1)+'-'+str(g5-1)+'-'+str(g6-1)+'-'+str(g7-1)
+                                    self.list_of_possible_genotypes.append(current_genotype)
+        #print(self.list_of_possible_genotypes)
+
+        # нужно вычислить размеры прямоугольной области, максимально приближенной по размерам к квадрату, где Ширина * Длина = Сумма генотипов:
+
+        # для этого нужно выписать в список все делители числа-суммы генотипов:
+        list_divisors = list()
+        current_number = int(self.genotypes_total // 2)
+        while current_number >= 2:
+            if self.genotypes_total % current_number == 0:
+                list_divisors.append(current_number)
+            current_number -= 1
+        print('list_divisors:', list_divisors)
+
+        # взять индекс примерно из середины полученного списка делителей:
+        somewhere_in_the_middle = len(list_divisors) // 2
+
+        # получить длины сторон будущего прямоугольника:
+        side_1 = list_divisors[somewhere_in_the_middle]
+        side_2 = self.genotypes_total / side_1
+
+        # определить, какая сторона длиннее, чтобы в будущем прямоугольник "положить" на бок:
+        self.side_x = int(side_1 if side_1 >= side_2 else side_2)
+        self.side_y = int(self.genotypes_total / self.side_x)
+        print('side_x =', self.side_x, 'side_y =', self.side_y)
+
+
+    # метод: добавить новый ген в словарь и/или добавить 1 в счётчик его присутствия в популяции:
     def genes_add_presence(self, genes):
-        global DICT_GENES
+        global DICT_GENOTYPES
         genes_str = '-'.join(map(str, genes))
-        DICT_GENES.setdefault(genes_str, (0, 0))
-        a, b = DICT_GENES[genes_str]
-        DICT_GENES[genes_str] = (a + 1, b)
+        DICT_GENOTYPES.setdefault(genes_str, (0, 0))
+        a, b = DICT_GENOTYPES[genes_str]
+        DICT_GENOTYPES[genes_str] = (a + 1, b)
 
-    # добавить 1 в счётчик присутствия гена в популяции:
+
+    # метод: добавить 1 в счётчик побед гена:
     def genes_add_win(self, genes):
-        global DICT_GENES
+        global DICT_GENOTYPES
         genes_str = '-'.join(map(str, genes))
-        a, b = DICT_GENES[genes_str]
-        DICT_GENES[genes_str] = (a, b + 1)
+        a, b = DICT_GENOTYPES[genes_str]
+        DICT_GENOTYPES[genes_str] = (a, b + 1)
 
+
+    # метод: добавить данные по дню:
     def add_new_day(self, day_number):
         global DICT_DAYS
         DICT_DAYS.setdefault(day_number, (population.how_many_rogues, population.how_many_rogues_alive))
 
 
+    # превратить словарь в список кортежей, упорядочить список по указанному элементу, вернуть:
+    def get_ordered_list_from_dict(self, dict_a, outer_index=1, inner_index=0):
+        list_ = list(dict_a.items())
+        list_.sort(key=lambda i: -i[outer_index][inner_index])
+        return list_
+
+
+    # отрисовать в HTML прямоугольную область, где показать распределение текущего разнообразия генотипов:
+    def draw_genes_diversity(self, filename, day_number, create_autonomous_version=False):
+
+
+
+        # отрисовать область, состоящую из <span>-квадратиков, где id будет равен коду генотипа:
+        HTML_genotype_field = ''
+        current_index = -1
+        for y in range(0, self.side_y):
+            current_row = ''
+            for x in range(0, self.side_x):
+
+                # получить код очередного возможного генотипа:
+                current_index += 1
+                genotype_id = self.list_of_possible_genotypes[current_index]
+
+                # если генотип уже появлялся в популяции, добавить цвет квадратику:
+                if genotype_id in DICT_GENOTYPES:
+                    color = 'green'
+                else:
+                    color = 'grey'
+
+                # добавить очередной квадратик-генотип в текущую строку:
+                current_row += '<span class="sq_genotype ' + color + '" id="' + genotype_id + '"></span>'
+
+            # когда вся строка сформирована, добавить её в код всей области:
+            HTML_genotype_field += current_row + '<br>'
+
+        # закончить оформление области:
+        HTML_genotype_field = '<div id="genotype_field">' + HTML_genotype_field + '</div>'
+
+        # если нужно иметь возможность открыть этот файл отдельно, то добавить недостающие теги:
+        if create_autonomous_version:
+            autonomous_tags_1 = read_file('autonomous_tags.txt')
+            autonomous_tags_2 = '</body></html>'
+            HTML_genotype_field = autonomous_tags_1 + HTML_genotype_field + autonomous_tags_2
+
+        # сохранить область в файл, который потом будет считываться через файл index.html:
+        save_data_to_file(filename, HTML_genotype_field)
+
+
+
 # КОНСТАНТЫ:
 GENES_CHAIN_LENGTH = 0  # <-- длина цепочки генов (должна совпадать с количеством словарей экипировки)
 
-# создать список ссылок на словари:
+# список ссылок на словари экипировки:
 LINKS_TO_EQUIP_DICTS = [RIGHT_HANDS, LEFT_HANDS, GLOVES, HEADS, CHESTS, PANTS, BOOTS]
 
 # словарь для хранения статистики по генам:
-DICT_GENES = {}
+DICT_GENOTYPES = {}
 
 # словарь для хранения статистики по дням:
 DICT_DAYS = {}
 
-# создать список, где будут храниться ссылки на всех разбойников:
+# список, где будут храниться ссылки на всех когда-либо появившихся разбойников:
 ROGUES_LIST = list()
-
-# создать объект для учёта разной статистики:
-stats = Stats()
 
 
 
 # ЗАПУСК:
 if __name__ == '__main__':
 
+    # создать объект статистики:
+    stats = Stats()
+
     # создать объект популяции и наполнить его разбойниками в указанном количестве:
-    population = Population(20)
+    population = Population(40)
 
     # создать объект для управления состязаниями:
     challenger = Challenger()
@@ -507,27 +620,42 @@ if __name__ == '__main__':
     # "прочитать" популяцию:
     print(population)
 
-    current = 1
-    max = 200
-    while current <= max:
-        print('\n\nДЕНЬ/DAY', current)
+    # запустить цикл на указанное количество дней (1 день = 1 столкновение у каждого (почти*) разбойника)
+    # * - когда в популяции в какой-то день нечётное количество разбойников, кто-то из них остаётся без пары и не дерётся в этот день
+    current_day = 1
+    max_days = 500
+    while current_day <= max_days:
+
+        # в начале каждого дня отрисовывать в HTML картину по генотипам:
+        filename = 'html_genotypes_on_day/day_' + str(current_day) + '.html'
+        stats.draw_genes_diversity(filename, current_day, create_autonomous_version=True)
+
+        print('\n\nДЕНЬ/DAY', current_day)
         challenger.perform_serie()
 
-        print('\nДень', current, 'завершён.')
+        print('\nДень', current_day, 'завершён.')
         print(population)
 
         # статистика для этого дня:
-        stats.add_new_day(current)
+        stats.add_new_day(current_day)
 
-        current += 1
+        current_day += 1
 
-    # вывести статистику генов:
-    print('Уникальных генов', len(DICT_GENES), ', вот они:')
-    print(DICT_GENES)
+    # вывести статистику генотипов:
+    print('\nУникальных генотипов ', len(DICT_GENOTYPES), ', вот они:', sep='')
+    print(DICT_GENOTYPES)
+
+    #print('list_of_possible_genotypes:')
+    #print(stats.list_of_possible_genotypes)
 
     # вывести статистику дней:
-    print('Дни:')
+    print('\nДНИ:')
     print(DICT_DAYS)
+
+    LIST_GENOTYPES_TOP = stats.get_ordered_list_from_dict(DICT_GENOTYPES, inner_index=1)
+
+    print('\nLIST_GENOTYPES_TOP:')
+    print(LIST_GENOTYPES_TOP)
 
 else:
     print('__name__ is not "__main__".')
