@@ -2,6 +2,7 @@
 def save_data_to_file(filename, data):
     with open(filename, 'w', encoding='utf8') as f:
         print(data, file=f)
+    return 'data_saved to "' + filename + '"'
 
 
 # добавить строки в указанный файл:
