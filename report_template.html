@@ -1,0 +1,83 @@
+<html>
+<head>
+<title>отчёт</title>
+<meta http-equiv='Cache-Control' content='private'; charset='utf-8'>
+<script type='text/javascript' src='jquery-3.5.0.min.js'></script>
+
+<style>
+body {
+    background-color: #fff;
+    margin: 0px;
+}
+
+p {
+    font-family: 'Calibri';
+    font-size: 1.1em;
+}
+
+#panel_main {
+    margin: 20px 12px 20px 12px;
+}
+
+.text_values {
+    font-weight: bold;
+}
+
+#main_table tr td {
+    font-family: 'Calibri';
+}
+
+.right_p {
+    padding-right: 24px;
+}
+</style>
+</head>
+
+
+<body>
+
+    <div id='panel_main' style='margin: 20px 12px 20px 12px;'>
+        <table id='main_table'>
+            <tr><td class='right_p'>дней прошло:</td><td><span class='text_values'>R_DAYS_TOTAL</span></td></tr>
+            <tr><td class='right_p'>начальный размер популяции:</td><td><span class='text_values'>R_PPL_INITIAL_SIZE</span></td></tr>
+            <tr><td class='right_p'>конечный размер популяции:</td><td><span class='text_values'>R_PPL_FINAL_SIZE</span></td></tr>
+            <tr><td class='right_p'>разбойников всего:</td><td><span class='text_values'>R_ROGUES_TOTAL</span></td></tr>
+            <tr><td class='right_p'>поколений всего:</td><td><span class='text_values'>R_GNR_TOTAL</span></td></tr>
+			<tr><td></td><td></td></tr>
+            <tr><td class='right_p'>уникальных генов:</td><td><span class='text_values'>R_UNIQUE_GENOTYPES</span></td></tr>
+            <tr><td class='right_p'>самый победоносный ген:</td><td><span class='text_values'>R_GENOTYPE_WINNER_NAME</span></td></tr>
+            <tr><td class='right_p'>побед у этого гена:</td><td><span class='text_values'>R_GENOTYPE_WINNER_WINS</span></td></tr>
+			<tr><td class='right_p'>появился в поколении:</td><td><span class='text_values'>R_GENOTYPE_WINNER_BORN</span></td></tr>
+        </table>
+    </div>
+    
+    <div style='margin: 20px 12px 20px 12px;'>
+        <div>
+			<p>показывается день: <span class='text_values' id='current_day_showing'>1</span></p>
+			<input type='range' id='input_range' min='1' max='R_DAYS_TOTAL' value='1'>
+        </div>
+        
+		<div>
+			<!-- подключение файла с визуализацией области генотипов -->
+			<iframe id='iFRAME' src='html_genotypes_on_day/day_1.html' width='920' height='640' align='center'>
+					Ваш браузер не поддерживает плавающие фреймы!
+			</iframe>
+        </div>
+    </div>
+
+
+    <script>
+		// когда страница готова:
+		$(document).ready(function(){
+			console.log('OK');
+		});
+		
+        $('#input_range').on('input', function(){
+            $('#current_day_showing').text( $(this).val() );
+			let new_doc = 'html_genotypes_on_day/day_' + $(this).val() + '.html';
+			$('#iFRAME').attr('src', new_doc);
+        });
+    </script>
+
+</body>
+</html>
