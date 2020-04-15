@@ -619,7 +619,7 @@ class Stats():
     def create_index_html(self):
 
         # считать основу с шаблона:
-        our_html = read_file('html_template_index.txt')
+        our_html = read_file('report_template.html')
 
         # заменить в нужных точках метки на данные:
         # - количество прошедших дней:
