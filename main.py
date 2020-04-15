@@ -4,6 +4,7 @@ from time import time, sleep
 
 # для некоторых операций:
 from random import randrange, randint, choice, shuffle
+from re import sub as replace
 
 # импортировать другие файлы проекта:
 from operations_with_files import *
@@ -39,6 +40,10 @@ class Population():
 
     # при создании популяции сразу же наполнить её:
     def __init__(self, total, dbg=False):
+
+        # запомнить начальное значение:
+        self.initial_size = total
+
         while total > 0:
 
             # создать нового разбойника, передав "пустой генотип" и отметку о том, что ему нужно сгенерировать гены:
@@ -119,7 +124,7 @@ class Rogue():
             self.my_genes = genes_list_inherited
 
         # отобразить эти гены в статистике:
-        stats.genes_add_presence(self.my_genes)
+        stats.genes_add_presence(self.my_genes, self.my_generation)
 
         # надеть экипировку согласно полученным генам:
         self.apply_genes(dbg=True)
@@ -281,7 +286,6 @@ class Rogue():
 
     # "применить" гены путём надевания обусловленной ими экипировки:
     def apply_genes(self, dbg=False):
-        #global LINKS_TO_EQUIP_DICTS
         pointer = 0
         for item_id in self.my_genes:
             self.wear_item(pointer, item_id, LINKS_TO_EQUIP_DICTS[pointer], dbg=True)
@@ -517,37 +521,38 @@ class Stats():
 
 
         # объявить набор цветов для поля генотипов:
-        self.green = [''] * 11
-        self.green[1] = '62eace'
-        self.green[2] = '4be7c8'
-        self.green[3] = '35e3c1'
-        self.green[4] = '1fe0ba'
-        self.green[5] = '1ccaa7'
-        self.green[6] = '18b495'
-        self.green[7] = '159d82'
-        self.green[8] = '12876f'
-        self.green[9] = '0f705d'
-        self.green[10] = '0c5a4a'
+        self.list_of_green_colors = [''] * 11
+        self.list_of_green_colors[1] = '62eace'
+        self.list_of_green_colors[2] = '4be7c8'
+        self.list_of_green_colors[3] = '35e3c1'
+        self.list_of_green_colors[4] = '1fe0ba'
+        self.list_of_green_colors[5] = '1ccaa7'
+        self.list_of_green_colors[6] = '18b495'
+        self.list_of_green_colors[7] = '159d82'
+        self.list_of_green_colors[8] = '12876f'
+        self.list_of_green_colors[9] = '0f705d'
+        self.list_of_green_colors[10] = '0c5a4a'
 
         # прочесть в память набор тегов для того, чтобы файлы с полями генотипов можно было открывать отдельно:
         self.autonomous_tags = read_file('autonomous_tags.txt')
 
 
-    # метод: добавить новый ген в словарь и/или добавить 1 в счётчик его присутствия в популяции:
-    def genes_add_presence(self, genes):
+    # метод: добавить новый ген и номер породившего его поколения в словарь,
+    # и/или добавить 1 в счётчик присутствия гена в популяции:
+    def genes_add_presence(self, genes, generation):
         global DICT_GENOTYPES
         genes_str = '-'.join(map(str, genes))
-        DICT_GENOTYPES.setdefault(genes_str, (0, 0))
-        a, b = DICT_GENOTYPES[genes_str]
-        DICT_GENOTYPES[genes_str] = (a + 1, b)
+        DICT_GENOTYPES.setdefault(genes_str, (generation, 0, 0))
+        a, b, c = DICT_GENOTYPES[genes_str]
+        DICT_GENOTYPES[genes_str] = (a, b + 1, c)
 
 
     # метод: добавить 1 в счётчик побед гена:
     def genes_add_win(self, genes):
         global DICT_GENOTYPES
         genes_str = '-'.join(map(str, genes))
-        a, b = DICT_GENOTYPES[genes_str]
-        DICT_GENOTYPES[genes_str] = (a, b + 1)
+        a, b, c = DICT_GENOTYPES[genes_str]
+        DICT_GENOTYPES[genes_str] = (a, b, c + 1)
 
 
     # метод: добавить данные по дню:
@@ -566,8 +571,6 @@ class Stats():
     # отрисовать в HTML прямоугольную область, где показать распределение текущего разнообразия генотипов:
     def draw_genes_diversity(self, filename, day_number, create_autonomous_version=False):
 
-
-
         # отрисовать область, состоящую из <span>-квадратиков, где id будет равен коду генотипа:
         HTML_genotype_field = ''
         current_index = -1
@@ -579,17 +582,22 @@ class Stats():
                 current_index += 1
                 genotype_id = self.list_of_possible_genotypes[current_index]
 
-                # если генотип уже появлялся в популяции, добавить цвет квадратику:
+                # добавить цвет квадратику зависимо от количества появлений гена в популяции:
                 if genotype_id in DICT_GENOTYPES:
-                    color = '#8e44ad'
-                    if DICT_GENOTYPES[genotype_id][0] == 0:
+                    genotype_appears = DICT_GENOTYPES[genotype_id][1]
+                    if genotype_appears == 0:
                         color = '#c0392b'
-                    elif 0 < DICT_GENOTYPES[genotype_id][0] <= 10:
-                        color = '#' + self.green[ DICT_GENOTYPES[genotype_id][0] ]
+                    elif 0 < genotype_appears <= 10:
+                        color = '#' + self.list_of_green_colors[ genotype_appears ]
                     else:
                         color = '#0033cc'
                 else:
                     color = '#e2e8e9'
+
+                # но если этот ген появился в самый первый день (изначально сгенерирован), перекрасить в синий:
+                if genotype_id in DICT_GENOTYPES:
+                    if DICT_GENOTYPES[genotype_id][0] == 1:
+                        color = '#4834d4'
 
                 # добавить очередной квадратик-генотип в текущую строку:
                 current_row += '<span class="sq_genotype" id="' + genotype_id + '" style="background-color: ' + color + '"></span>'
@@ -598,16 +606,50 @@ class Stats():
             HTML_genotype_field += current_row + '<br>\n'
 
         # закончить оформление области:
-        HTML_genotype_field = '\n\n<div id="genotype_field">\n' + HTML_genotype_field + '</div>\n'
+        HTML_genotype_field = '\n\n<div id="outer_container"><div id="genotype_field">\n' + HTML_genotype_field + '</div></div>\n'
 
         # если нужно иметь возможность открыть этот файл отдельно, то добавить недостающие теги:
         if create_autonomous_version:
-            autonomous_tags_1 = self.autonomous_tags
-            autonomous_tags_2 = '\n</body>\n</html>'
-            HTML_genotype_field = autonomous_tags_1 + HTML_genotype_field + autonomous_tags_2
+            HTML_genotype_field = self.autonomous_tags + HTML_genotype_field + '\n</body>\n</html>'
 
         # сохранить область в файл, который потом будет считываться через файл index.html:
         save_data_to_file(filename, HTML_genotype_field)
+
+
+    def create_index_html(self):
+
+        # считать основу с шаблона:
+        our_html = read_file('html_template_index.txt')
+
+        # заменить в нужных точках метки на данные:
+        # - количество прошедших дней:
+        our_html = replace('R_DAYS_TOTAL', str(max_days), our_html)
+
+        # - начальный и конечный размеры популяции:
+        our_html = replace('R_PPL_INITIAL_SIZE', str(population.initial_size), our_html)
+        our_html = replace('R_PPL_FINAL_SIZE', str(population.how_many_rogues_alive), our_html)
+
+        # сколько всего разбойников появилось на свет:
+        our_html = replace('R_ROGUES_TOTAL', str(population.how_many_rogues), our_html)
+
+        # сколько поколений образовалось:
+        our_html = replace('R_GNR_TOTAL', str(population.generations), our_html)
+
+        # - количество уникальных генов:
+        our_html = replace('R_UNIQUE_GENOTYPES', str(len(DICT_GENOTYPES)), our_html)
+
+        # информация о самом победоносном гене:
+        list_genotypes_top = stats.get_ordered_list_from_dict(DICT_GENOTYPES, inner_index=2)
+        winner_name = list_genotypes_top[0][0]
+        winner_born = list_genotypes_top[0][1][0]
+        winner_wins = list_genotypes_top[0][1][2]
+        our_html = replace('R_GENOTYPE_WINNER_NAME', winner_name, our_html)
+        our_html = replace('R_GENOTYPE_WINNER_BORN', str(winner_born), our_html)
+        our_html = replace('R_GENOTYPE_WINNER_WINS', str(winner_wins), our_html)
+
+        # сохранить в интерактивный файл-отчёт:
+        saving_status = save_data_to_file('report.html', our_html)
+        print(saving_status)
 
 
 
@@ -646,7 +688,7 @@ if __name__ == '__main__':
     # запустить цикл на указанное количество дней (1 день = 1 столкновение у каждого (почти*) разбойника)
     # * - когда в популяции в какой-то день нечётное количество разбойников, кто-то из них остаётся без пары и не дерётся в этот день
     current_day = 1
-    max_days = 500
+    max_days = 50
     while current_day <= max_days:
 
         # в начале каждого дня отрисовывать в HTML картину по генотипам:
@@ -675,10 +717,13 @@ if __name__ == '__main__':
     print('\nДНИ:')
     print(DICT_DAYS)
 
-    LIST_GENOTYPES_TOP = stats.get_ordered_list_from_dict(DICT_GENOTYPES, inner_index=1)
+    LIST_GENOTYPES_TOP = stats.get_ordered_list_from_dict(DICT_GENOTYPES, inner_index=2)
 
     print('\nLIST_GENOTYPES_TOP:')
     print(LIST_GENOTYPES_TOP)
+
+    # создать общий HTML для изучения сессии:
+    stats.create_index_html()
 
 else:
     print('__name__ is not "__main__".')
