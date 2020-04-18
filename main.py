@@ -36,6 +36,9 @@ class Population():
     max_winner_name = 'none'
     max_winner_genes = 'none'
 
+    # день последних изменений в изменении численности популяции:
+    day_of_last_changes = 0
+
 
 
     # при создании популяции сразу же наполнить её:
@@ -313,6 +316,8 @@ class Rogue():
             new_rogue = Rogue(self.my_genes, self.my_generation, from_parent=True)
             ROGUES_LIST.append(new_rogue)
 
+            population.day_of_last_changes = current_day
+
         # обновить рекорд количества побед у одного разбойника в популяции:
         if self.my_wins > Population.record_max_wins:
             Population.record_max_wins = self.my_wins
@@ -328,6 +333,9 @@ class Rogue():
         if self.my_defeats == population.defeats_to_die:
             self.alive = False
             Population.how_many_rogues_alive -= 1
+
+            population.day_of_last_changes = current_day
+
             if dbg:
                 print(self.name + ' выпиливается...')
 
@@ -525,17 +533,17 @@ class Stats():
 
 
         # объявить набор цветов для карты распространённости генотипов:
-        self.list_of_diversity_colors = [''] * 11
-        self.list_of_diversity_colors[0] = 'c0392b'
-        self.list_of_diversity_colors[1] = '62eace'
-        self.list_of_diversity_colors[2] = '4be7c8'
-        self.list_of_diversity_colors[3] = '35e3c1'
-        self.list_of_diversity_colors[4] = '1fe0ba'
-        self.list_of_diversity_colors[5] = '1ccaa7'
-        self.list_of_diversity_colors[6] = '18b495'
-        self.list_of_diversity_colors[7] = '159d82'
-        self.list_of_diversity_colors[8] = '12876f'
-        self.list_of_diversity_colors[9] = '0f705d'
+        self.list_of_distribution_colors = [''] * 11
+        self.list_of_distribution_colors[0] = 'c0392b'
+        self.list_of_distribution_colors[1] = '62eace'
+        self.list_of_distribution_colors[2] = '4be7c8'
+        self.list_of_distribution_colors[3] = '35e3c1'
+        self.list_of_distribution_colors[4] = '1fe0ba'
+        self.list_of_distribution_colors[5] = '1ccaa7'
+        self.list_of_distribution_colors[6] = '18b495'
+        self.list_of_distribution_colors[7] = '159d82'
+        self.list_of_distribution_colors[8] = '12876f'
+        self.list_of_distribution_colors[9] = '0f705d'
 
 
         # объявить набор цветов для карты побед генотипов:
@@ -589,7 +597,7 @@ class Stats():
 
 
     # метод - отрисовать в HTML прямоугольную область, где показать "карту генотипов" с точки зрения их распространённости:
-    def draw_genes_diversity(self, filename, day_number, create_autonomous_version=False):
+    def draw_genes_distribution(self, filename, day_number, create_autonomous_version=False):
 
         # отрисовать область, состоящую из <span>-квадратиков, где id будет равен коду генотипа:
         HTML_genotype_field = ''
@@ -606,7 +614,7 @@ class Stats():
                 if genotype_id in DICT_GENOTYPES:
                     genotype_appears = DICT_GENOTYPES[genotype_id][1]
                     if 0 <= genotype_appears < 10:
-                        color = '#' + self.list_of_diversity_colors[ genotype_appears ]
+                        color = '#' + self.list_of_distribution_colors[ genotype_appears ]
                     else:
                         color = '#0033cc'
                 else:
@@ -690,6 +698,9 @@ class Stats():
         # - количество прошедших дней:
         our_html = replace('R_DAYS_TOTAL', str(max_days), our_html)
 
+        # - день, когда произошли последние изменения в численности популяции:
+        our_html = replace('R_DAY_LAST_CHANGES', str(population.day_of_last_changes), our_html)
+
         # - начальный и конечный размеры популяции:
         our_html = replace('R_PPL_INITIAL_SIZE', str(population.initial_size), our_html)
         our_html = replace('R_PPL_FINAL_SIZE', str(population.how_many_rogues_alive), our_html)
@@ -758,7 +769,7 @@ if __name__ == '__main__':
 
         # в начале каждого дня отрисовывать в HTML картину по распространённости генотипов:
         filename = 'html_genotypes_distribution/day_' + str(current_day) + '.html'
-        stats.draw_genes_diversity(filename, current_day, create_autonomous_version=True)
+        stats.draw_genes_distribution(filename, current_day, create_autonomous_version=True)
 
         print('\n\nДЕНЬ/DAY', current_day)
         challenger.perform_serie()
