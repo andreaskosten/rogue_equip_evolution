@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>отчёт</title>
+<title>отчёт R_LAUNCH_TIME</title>
 <meta http-equiv='Cache-Control' content='private'; charset='utf-8'>
 <script type='text/javascript' src='jquery-3.5.0.min.js'></script>
 
@@ -23,7 +23,7 @@ p {
     font-weight: bold;
 }
 
-#main_table tr td {
+.report_table tr td {
     font-family: 'Calibri';
 }
 
@@ -36,36 +36,60 @@ p {
 
 <body>
 
-    <div id='panel_main' style='margin: 20px 12px 20px 12px;'>
-        <table id='main_table'>
-            <tr><td class='right_p'>дней прошло:</td><td><span class='text_values'>R_DAYS_TOTAL</span></td></tr>
-            <tr><td class='right_p'>начальный размер популяции:</td><td><span class='text_values'>R_PPL_INITIAL_SIZE</span></td></tr>
-            <tr><td class='right_p'>конечный размер популяции:</td><td><span class='text_values'>R_PPL_FINAL_SIZE</span></td></tr>
-            <tr><td class='right_p'>разбойников всего:</td><td><span class='text_values'>R_ROGUES_TOTAL</span></td></tr>
-            <tr><td class='right_p'>поколений всего:</td><td><span class='text_values'>R_GNR_TOTAL</span></td></tr>
-			<tr><td></td><td></td></tr>
-            <tr><td class='right_p'>уникальных генов:</td><td><span class='text_values'>R_UNIQUE_GENOTYPES</span></td></tr>
-            <tr><td class='right_p'>самый победоносный ген:</td><td><span class='text_values'>R_GENOTYPE_WINNER_NAME</span></td></tr>
-            <tr><td class='right_p'>побед у этого гена:</td><td><span class='text_values'>R_GENOTYPE_WINNER_WINS</span></td></tr>
-			<tr><td class='right_p'>появился в поколении:</td><td><span class='text_values'>R_GENOTYPE_WINNER_BORN</span></td></tr>
-        </table>
+    <div id='panel_main' style='margin: 20px 12px 20px 12px; display: flex; flex-direction: row; justify-content: flex-start; align-items: flex-start'>
+		
+		<div style='margin-right: 32px'>
+			<table class='report_table'>
+				<tr><td class='right_p'>время запуска:</td><td><span class='text_values'>R_LAUNCH_TIME</span></td></tr>
+				<tr><td class='right_p'>дней прошло:</td><td><span class='text_values'>R_DAYS_TOTAL</span></td></tr>
+				<tr><td class='right_p'>начальный размер популяции:</td><td><span class='text_values'>R_PPL_INITIAL_SIZE</span></td></tr>
+				<tr><td class='right_p'>конечный размер популяции:</td><td><span class='text_values'>R_PPL_FINAL_SIZE</span></td></tr>
+				<tr><td class='right_p'>разбойников всего:</td><td><span class='text_values'>R_ROGUES_TOTAL</span></td></tr>
+				<tr><td class='right_p'>поколений всего:</td><td><span class='text_values'>R_GNR_TOTAL</span></td></tr>
+				<!-- <tr><td></td><td></td></tr> -->
+			</table>
+		</div>
+		
+		<div>
+			<table class='report_table'>
+				<tr><td class='right_p'>уникальных генов:</td><td><span class='text_values'>R_UNIQUE_GENOTYPES</span></td></tr>
+				<tr><td class='right_p'>самый победоносный ген:</td><td><span class='text_values'>R_GENOTYPE_WINNER_NAME</span></td></tr>
+				<tr><td class='right_p'>побед у этого гена:</td><td><span class='text_values'>R_GENOTYPE_WINNER_WINS</span></td></tr>
+				<tr><td class='right_p'>появился в поколении:</td><td><span class='text_values'>R_GENOTYPE_WINNER_BORN</span></td></tr>
+			</table>
+		</div>
     </div>
     
-    <div style='margin: 20px 12px 20px 12px;'>
-        <div>
-			<p>показывается день: <span class='text_values' id='current_day_showing'>1</span></p>
+	
+	
+	<div style='margin: 20px 12px 20px 12px;'>
+	
+		<div style='margin: 10px 0px 10px 0px' align='center'>
+			<p style='font-size: 1em'>показывается день: <span class='text_values' id='current_day_showing'>1</span></p>
 			<input type='range' id='input_range' min='1' max='R_DAYS_TOTAL' value='1'>
-        </div>
-        
-		<div>
-			<!-- подключение файла с визуализацией области генотипов -->
-			<iframe id='iFRAME' src='html_genotypes_on_day/day_1.html' width='920' height='640' align='center'>
-					Ваш браузер не поддерживает плавающие фреймы!
-			</iframe>
-        </div>
-    </div>
-
-
+		</div>
+		
+		<!-- контейнеры с iframes, сгенерерированные объектом класса Stats -->
+		<div style='display: flex; flex-direction: row; justify-content: center; align-items: flex-start'>
+		
+			<div style='margin-right: 10px'>
+				<!-- подключение файла с визуализацией области генотипов (distribution) -->
+				<iframe id='iFRAME_distribution' src='html_genotypes_distribution/day_1.html' width='860' height='640' align='center'>
+						Ваш браузер не поддерживает плавающие фреймы!
+				</iframe>
+			</div>
+			
+			<div>
+				<!-- подключение файла с визуализацией области генотипов (wins) -->
+				<iframe id='iFRAME_wins' src='html_genotypes_wins/day_1.html' width='860' height='640' align='center'>
+						Ваш браузер не поддерживает плавающие фреймы!
+				</iframe>
+			</div>
+		</div>
+	</div>
+	
+	
+	
     <script>
 		// когда страница готова:
 		$(document).ready(function(){
@@ -74,8 +98,12 @@ p {
 		
         $('#input_range').on('input', function(){
             $('#current_day_showing').text( $(this).val() );
-			let new_doc = 'html_genotypes_on_day/day_' + $(this).val() + '.html';
-			$('#iFRAME').attr('src', new_doc);
+			
+			let new_doc_distribution = 'html_genotypes_distribution/day_' + $(this).val() + '.html';
+			$('#iFRAME_distribution').attr('src', new_doc_distribution);
+			
+			let new_doc_wins = 'html_genotypes_wins/day_' + $(this).val() + '.html';
+			$('#iFRAME_wins').attr('src', new_doc_wins);
         });
     </script>
 
