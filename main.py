@@ -680,7 +680,13 @@ class Stats():
         # считать основу с шаблона:
         our_html = read_file('report_template.html')
 
+        # время запуска:
+        current_time = datetime.strftime(datetime.now(), '%Y-%m-%d_%H-%M-%S')
+
         # заменить в нужных точках метки на данные:
+        # - время запуска:
+        our_html = replace('R_LAUNCH_TIME', current_time, our_html)
+
         # - количество прошедших дней:
         our_html = replace('R_DAYS_TOTAL', str(max_days), our_html)
 
@@ -707,7 +713,7 @@ class Stats():
         our_html = replace('R_GENOTYPE_WINNER_WINS', str(winner_wins), our_html)
 
         # сохранить в интерактивный файл-отчёт:
-        saving_status = save_data_to_file('report.html', our_html)
+        saving_status = save_data_to_file('report ' + current_time + '.html', our_html)
         print(saving_status)
 
 
