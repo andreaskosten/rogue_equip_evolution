@@ -30,6 +30,17 @@ p {
 .right_p {
     padding-right: 24px;
 }
+
+.btn_change_day {
+	background-color: #74b9ff;
+	border: 1px solid #444;
+	cursor: pointer;
+	padding: 2px 4px 2px 4px;
+}.btn_change_day:hover { filter: brightness(1.2); }
+
+#input_range {
+	margin: 0px 5px 0px 5px;
+}
 </style>
 </head>
 
@@ -41,11 +52,12 @@ p {
 		<div style='margin-right: 32px'>
 			<table class='report_table'>
 				<tr><td class='right_p'>время запуска:</td><td><span class='text_values'>R_LAUNCH_TIME</span></td></tr>
-				<tr><td class='right_p'>дней прошло:</td><td><span class='text_values'>R_DAYS_TOTAL</span></td></tr>
+				<tr><td class='right_p'>дней прошло:</td><td><span class='text_values' id='text_DAYS_TOTAL'>R_DAYS_TOTAL</span></td></tr>
 				<tr><td class='right_p'>начальный размер популяции:</td><td><span class='text_values'>R_PPL_INITIAL_SIZE</span></td></tr>
 				<tr><td class='right_p'>конечный размер популяции:</td><td><span class='text_values'>R_PPL_FINAL_SIZE</span></td></tr>
 				<tr><td class='right_p'>разбойников всего:</td><td><span class='text_values'>R_ROGUES_TOTAL</span></td></tr>
 				<tr><td class='right_p'>поколений всего:</td><td><span class='text_values'>R_GNR_TOTAL</span></td></tr>
+				<tr><td class='right_p'>день последних изменений:</td><td><span class='text_values'>R_DAY_LAST_CHANGES</span></td></tr>
 				<!-- <tr><td></td><td></td></tr> -->
 			</table>
 		</div>
@@ -66,7 +78,12 @@ p {
 	
 		<div style='margin: 10px 0px 10px 0px' align='center'>
 			<p style='font-size: 1em'>показывается день: <span class='text_values' id='current_day_showing'>1</span></p>
-			<input type='range' id='input_range' min='1' max='R_DAYS_TOTAL' value='1'>
+			
+			<div style='display: flex; flex-direction: row; justify-content: center; align-items: center;'>
+				<div><span class='btn_change_day' id='btn_day_prev'>&#8592;</span></div>
+				<div><input type='range' id='input_range' min='1' max='R_DAYS_TOTAL' value='1'></div>
+				<div><span class='btn_change_day' id='btn_day_next'>&#8594;</span></div>
+			</div>
 		</div>
 		
 		<!-- контейнеры с iframes, сгенерерированные объектом класса Stats -->
@@ -96,6 +113,7 @@ p {
 			console.log('OK');
 		});
 		
+		// выбор дня:
         $('#input_range').on('input', function(){
             $('#current_day_showing').text( $(this).val() );
 			
@@ -105,6 +123,30 @@ p {
 			let new_doc_wins = 'html_genotypes_wins/day_' + $(this).val() + '.html';
 			$('#iFRAME_wins').attr('src', new_doc_wins);
         });
+		
+		// переключение дня кнопкой:
+		$('.btn_change_day').click(function(){
+			
+			let current_day = Number( $('#input_range').val() );
+			let new_day = 0;
+			
+			// если предыдущий день:
+			if( $(this).attr('id') == 'btn_day_prev' ){
+				new_day = current_day - 1;
+				if( new_day < 0 ){ new_day = 0; }
+			}
+			
+			// если следующий день:
+			if( $(this).attr('id') == 'btn_day_next' ){
+				new_day = current_day + 1;
+				let max_days = Number( $('#text_DAYS_TOTAL').text() );
+				if( new_day > max_days ){ new_day = max_days; }
+			}
+			
+			$('#input_range').val(new_day);
+			$('#input_range').trigger('input');
+			
+		});
     </script>
 
 </body>
