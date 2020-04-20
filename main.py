@@ -6,6 +6,9 @@ from time import time, sleep
 from random import randrange, randint, choice, shuffle
 from re import sub as replace
 
+# для отрисовки графиков:
+import matplotlib.pyplot as plt
+
 # импортировать другие файлы проекта:
 from operations_with_files import *
 from charts_functions import *
@@ -683,6 +686,39 @@ class Stats():
         save_data_to_file(filename, HTML_genotype_field)
 
 
+    # метод - отрисовать график при помощи matplotlib.pyplot:
+    def draw_and_put_line_chart_to_file(self, DICT_DAYS, element_to_extract, chart_title, x_label, y_label, filename):
+        list_x = []
+        list_y = []
+        day = 1
+
+        # добавить указанный элемент кортежа словаря (соответствующего текущему дню) в список, который ляжет на график:
+        for x in DICT_DAYS:
+            #print('x =', x)
+            list_x.append(day)
+            list_y.append( DICT_DAYS[x][element_to_extract] )
+            day += 1
+
+        # превратить данные в график, нарисовать сетку:
+        fig, axes = plt.subplots()
+        axes.plot(list_x, list_y)
+        axes.grid(color='#eee')
+
+        # окрасить тики графика в более светлый цвет:
+        axes.tick_params(colors='#aaa')
+
+        # добавить подпись к графику:
+        axes.set_title(chart_title)
+
+        # добавить подписи к осям:
+        axes.set_xlabel(x_label)
+        axes.set_ylabel(y_label)
+
+        # сохранить изображение в файл:
+        fig.savefig(filename)
+
+
+    # метод - взять HTML-шаблон и создать интерактивный шаблон на его основе:
     def create_index_html(self):
 
         # считать основу с шаблона:
@@ -801,6 +837,12 @@ if __name__ == '__main__':
 
     print('\nLIST_GENOTYPES_TOP:')
     print(LIST_GENOTYPES_TOP)
+
+    # нарисовать линейный график о динамике одновременно живущих разбойников:
+    stats.draw_and_put_line_chart_to_file(DICT_DAYS, 1, 'живое население', 'дни', 'разбойников', 'charts/chart_population_demography.png')
+
+    # нарисовать линейный график о динамике общей численности когда-либо живших разбойников:
+    stats.draw_and_put_line_chart_to_file(DICT_DAYS, 0, 'родившихся всего', 'дни', 'разбойников', 'charts/chart_population_total.png')
 
     # создать общий HTML для изучения сессии:
     stats.create_index_html()
