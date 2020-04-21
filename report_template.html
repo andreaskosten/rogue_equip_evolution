@@ -105,12 +105,36 @@ p {
 
 
 <body>
-
+	
+	<!-- preloader -->
+    <style type="text/css">
+        .preloader_bg { position: fixed; background: #fff; width: 100%; height: 100%; top: 0; left: 0; z-index: 100; }
+        .preloader_content { position: fixed; left: 50%; top: 50%; transform: translate(-50%,-50%); z-index: 101; }
+    </style>
+	
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('.preloader_bg').fadeOut(500);
+            $('.preloader_content').fadeOut(500);
+        });
+    </script>
+	
+    <div class="preloader_bg"></div>
+    <div class="preloader_content"><p style='display: block; font-size: 2em; margin: auto; text-align: center; color: #222;'>ЗАГРУЗКА...</p></div>
+	
+    <noscript>
+        <style>
+            .preloader_bg, .preloader_content { display: none !important; }
+        </style>
+    </noscript>
+    <!-- /preloader -->
+	
     <div id='panel_main' style='margin: 20px 12px 20px 12px; display: flex; flex-direction: row; justify-content: flex-start; align-items: flex-start'>
 		
 		<div style='margin-right: 32px'>
 			<table class='report_table'>
 				<tr><td class='right_p'>время запуска:</td><td><span class='text_values'>R_LAUNCH_TIME</span></td></tr>
+				<tr><td class='right_p'>стадий прошло:</td><td><span class='text_values' id='R_STAGES_TOTAL'>R_STAGES_TOTAL</span></td></tr>
 				<tr><td class='right_p'>дней прошло:</td><td><span class='text_values' id='text_DAYS_TOTAL'>R_DAYS_TOTAL</span></td></tr>
 				<tr><td class='right_p'>начальный размер популяции:</td><td><span class='text_values'>R_PPL_INITIAL_SIZE</span></td></tr>
 				<tr><td class='right_p'>конечный размер популяции:</td><td><span class='text_values'>R_PPL_FINAL_SIZE</span></td></tr>
@@ -159,7 +183,7 @@ p {
 							
 							<div style='' align='left'>
 								<p style='font-size: 0.8em; margin: 0px; padding: 0px'>задержка между слайдами, ms</p>
-								<input class='inputs' id='input_delay' value='200' size='4' style='font-size: 0.8em'>
+								<input class='inputs' id='input_delay' value='50' size='4' style='font-size: 0.8em'>
 							</div>
 						</div>
 					</div>
@@ -171,11 +195,13 @@ p {
 		
 		<!-- контейнеры с iframes, сгенерерированные объектом класса Stats -->
 		<div style='display: flex; flex-direction: row; justify-content: center; align-items: flex-start'>
-		
+			
+			<!-- тут будут визуализациии области генотипов (с точки зрения их распространённости) -->
 			<div style='margin-right: 5px' id='spawner_for_iframes_distribution'>
 				<!-- тут будет сгенерировано содержимое -->
 			</div>
 			
+			<!-- тут будут визуализациии области генотипов (с точки зрения их побед) -->
 			<div style='margin-left: 5px' id='spawner_for_iframes_wins'>
 				<!-- тут будет сгенерировано содержимое -->
 			</div>
