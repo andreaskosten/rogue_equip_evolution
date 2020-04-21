@@ -45,7 +45,7 @@ class Population():
 
 
     # при создании популяции сразу же наполнить её:
-    def __init__(self, total, wins_to_reproduce=2, defeats_to_die=2, dbg=False):
+    def __init__(self, total, wins_to_reproduce=2, defeats_to_die=2):
 
         # запомнить начальное значение:
         self.initial_size = total
@@ -75,6 +75,37 @@ class Population():
         text += 'имя рекордсмена: ' + str(self.max_winner_name) + '\n'
         text += 'генотип рекордсмена: ' + str(self.max_winner_genes) + '\n'
         return text
+
+
+    # перезагрузить популяцию, оставив в ней how_many_to_save разбойников с наиболее успешными генотипами:
+    def reload(self, how_many_to_save):
+
+        # обнулить кол-во разбойников:
+        how_many_rogues_alive = 0
+
+        # "убить" всех существующих разбойников:
+        for x in ROGUES_LIST:
+            x.alive = False
+
+        # извлечь из словаря генотипов данные о лучших генотипах:
+        list_genotypes_top = stats.get_ordered_list_from_dict(LIST_FOR_DICTS_GENOTYPES[current_stage], inner_index=2)
+
+        # наполнить популяцию разбойниками с этими генотипами:
+        for x in range(0, how_many_to_save):
+
+            # преобразовать генотип из строки в список:
+            genotype_in_str = list_genotypes_top[x][0]
+            genotype_in_list = []
+            for char in genotype_in_str:
+                if char != '-':
+                    genotype_in_list.append( int(char) )
+
+            # создать нового разбойника, передав генотип и отметку о том, что гены НЕ должны мутировать:
+            new_rogue = Rogue(genotype_in_list, 0, from_parent=True, genes_can_mutate=False)
+
+            # пополнить список разбойников:
+            ROGUES_LIST.append(new_rogue)
+
 
 
 
@@ -127,9 +158,9 @@ class Rogue():
         if genes_can_mutate:
             # если этот разбойник порождён другим разбойником, его гены должны незначительно мутировать:
             if from_parent:
-                self.mutate_genes(genes_list_inherited, dbg=True)
+                self.mutate_genes(genes_list_inherited)
             else:
-                self.generate_random_genes(dbg=True)
+                self.generate_random_genes()
         else:
             self.my_genes = genes_list_inherited
 
@@ -137,7 +168,7 @@ class Rogue():
         stats.genes_add_presence(self.my_genes, self.my_generation)
 
         # надеть экипировку согласно полученным генам:
-        self.apply_genes(dbg=True)
+        self.apply_genes()
 
 
     # метод для расчёта текущих характеристик без вещей:
@@ -163,7 +194,9 @@ class Rogue():
 
 
     # метод для расчёта собственного рейтинга:
-    def calculate_rate(self, dbg=False):
+    def calculate_rate(self):
+        dbg = DBG_rogue_calculate_rate
+
         # вычислить вероятность попадания:
         p_hit = self.stat_hit / 100
 
@@ -190,7 +223,9 @@ class Rogue():
 
 
     # сгенерировать случайный набор генов:
-    def generate_random_genes(self, dbg=False):
+    def generate_random_genes(self):
+        dbg = DBG_rogue_generate_random_genes
+
         self.my_genes[0] = randrange(1, len(RIGHT_HANDS))    # <-- для правой руки:
         self.my_genes[1] = randrange(1, len(LEFT_HANDS))     # <-- для левой руки:
         self.my_genes[2] = randrange(1, len(GLOVES))         # <-- для рукавиц:
@@ -205,7 +240,8 @@ class Rogue():
 
 
     # унаследовать родительские гены с вероятностью мутации:
-    def mutate_genes(self, parent_genes, dbg=False):
+    def mutate_genes(self, parent_genes):
+        dbg = DBG_rogue_mutate_genes
 
         # взять за основу родительские гены:
         self.my_genes = parent_genes.copy()
@@ -251,7 +287,7 @@ class Rogue():
 
                 # если этот ген ещё не мутировал:
                 if gene_with_forced_mutation not in genes_mutated:
-                    self.mutate_gene(gene_with_forced_mutation, dbg=True)
+                    self.mutate_gene(gene_with_forced_mutation)
                     genes_mutated.append(gene_with_forced_mutation)
                     current_iter += 1
                     if dbg:  # для отладки:
@@ -275,7 +311,9 @@ class Rogue():
 
 
     # произвести мутацию в указанном гене, изменив его значение на любое другое:
-    def mutate_gene(self, gene_id, dbg=False):
+    def mutate_gene(self, gene_id):
+        dbg = DBG_rogue_mutate_gene
+
         current_value = self.my_genes[gene_id]
         new_value = current_value
 
@@ -295,10 +333,12 @@ class Rogue():
 
 
     # "применить" гены путём надевания обусловленной ими экипировки:
-    def apply_genes(self, dbg=False):
+    def apply_genes(self):
+        dbg = DBG_rogue_apply_genes
+
         pointer = 0
         for item_id in self.my_genes:
-            self.wear_item(pointer, item_id, LINKS_TO_EQUIP_DICTS[pointer], dbg=True)
+            self.wear_item(pointer, item_id, LINKS_TO_EQUIP_DICTS[pointer])
             pointer += 1
 
         if dbg:  # для отладки:
@@ -308,14 +348,16 @@ class Rogue():
 
     # оформить победу в дуэли:
     def do_win(self):
-        self.my_wins += 1
+        dbg = DBG_rogue_do_win
 
+        self.my_wins += 1
         stats.genes_add_win(self.my_genes)
 
         # после каждой второй победы:
         if self.my_wins % population.wins_to_reproduce == 0:
             # родить разбойника-потомка:
-            print(self.name + ' рожает потомка...')
+            if dbg:
+                print(self.name + ' рожает потомка...')
             new_rogue = Rogue(self.my_genes, self.my_generation, from_parent=True)
             ROGUES_LIST.append(new_rogue)
 
@@ -329,7 +371,9 @@ class Rogue():
 
 
     # оформить поражение в дуэли:
-    def do_defeat(self, dbg=False):
+    def do_defeat(self):
+        dbg = DBG_rogue_do_defeat
+
         self.my_defeats += 1
 
         # после двух поражений выпилиться:
@@ -343,7 +387,8 @@ class Rogue():
                 print(self.name + ' выпиливается...')
 
 
-    def wear_item(self, slot, item_id, items_list, dbg=False):
+    def wear_item(self, slot, item_id, items_list):
+        dbg = DBG_rogue_wear_item
 
         item_id += 1
 
@@ -423,8 +468,9 @@ class Rogue():
 class Challenger():
     """Класс обеспечивает проведение столкновений между случайными разбойниками."""
 
-    # провести череду соревнований:
+    # провести серию соревнований:
     def perform_serie(self):
+        dbg = DBG_challenger_perform_serie
 
         # создать список живых разбойников:
         rogues_alive = []
@@ -438,7 +484,8 @@ class Challenger():
         # получить количество пар живых разбойников в популяции:
         pairs_total = int(len(rogues_alive) // 2)
 
-        print('pairs_total =', pairs_total)
+        if dbg:
+            print('pairs_total =', pairs_total)
 
         # запускать бои между соседними по списку разбойниками:
         counter = 0
@@ -447,19 +494,21 @@ class Challenger():
             a_1 = rogues_alive[pointer]
             a_2 = rogues_alive[pointer + 1]
             #print('новая пара:', a_1.name, 'и', a_2.name)
-            self.perform_one(a_1, a_2, dbg=True)
+            self.perform_one(a_1, a_2)
             counter += 1
             pointer += 2
 
 
     # провести соревнование между двумя разбойниками:
-    def perform_one(self, rogue_1, rogue_2, dbg=False):
+    def perform_one(self, rogue_1, rogue_2):
+        dbg = DBG_challenger_perform_one
+
         if dbg:
             print('\nновое соревнование между:', rogue_1.name, 'и', rogue_2.name)
 
         # рассчитать рейтинг каждого разбойника (в более совершенной симуляции тут может быть полноценное сражение):
-        rating_1 = rogue_1.calculate_rate(dbg=False)
-        rating_2 = rogue_2.calculate_rate(dbg=False)
+        rating_1 = rogue_1.calculate_rate()
+        rating_2 = rogue_2.calculate_rate()
 
         if dbg:
             print('\tих рейтинг:', rating_1, 'и', rating_2, 'соответственно.')
@@ -467,9 +516,9 @@ class Challenger():
         # раскидать очки между победителем и проигравшим:
         if rating_1 > rating_2:
             rogue_1.do_win()
-            rogue_2.do_defeat(dbg=True)
+            rogue_2.do_defeat()
         elif rating_1 < rating_2:
-            rogue_1.do_defeat(dbg=True)
+            rogue_1.do_defeat()
             rogue_2.do_win()
         else:
             if dbg:
@@ -571,25 +620,23 @@ class Stats():
     # метод - добавить новый ген и номер породившего его поколения в словарь,
     # и/или добавить 1 в счётчик присутствия гена в популяции:
     def genes_add_presence(self, genes, generation):
-        global DICT_GENOTYPES
         genes_str = '-'.join(map(str, genes))
-        DICT_GENOTYPES.setdefault(genes_str, (generation, 0, 0))
-        a, b, c = DICT_GENOTYPES[genes_str]
-        DICT_GENOTYPES[genes_str] = (a, b + 1, c)
+        LIST_FOR_DICTS_GENOTYPES[current_stage].setdefault(genes_str, (generation, 0, 0))
+        a, b, c = LIST_FOR_DICTS_GENOTYPES[current_stage][genes_str]
+        LIST_FOR_DICTS_GENOTYPES[current_stage][genes_str] = (a, b + 1, c)
 
 
     # метод - добавить 1 в счётчик побед гена:
     def genes_add_win(self, genes):
-        global DICT_GENOTYPES
         genes_str = '-'.join(map(str, genes))
-        a, b, c = DICT_GENOTYPES[genes_str]
-        DICT_GENOTYPES[genes_str] = (a, b, c + 1)
+        a, b, c = LIST_FOR_DICTS_GENOTYPES[current_stage][genes_str]
+        LIST_FOR_DICTS_GENOTYPES[current_stage][genes_str] = (a, b, c + 1)
 
 
     # метод - добавить данные по дню:
     def add_new_day(self, day_number):
         global DICT_DAYS
-        DICT_DAYS.setdefault(day_number, (population.how_many_rogues, population.how_many_rogues_alive))
+        DICT_DAYS.setdefault(day_number, (Population.how_many_rogues, Population.how_many_rogues_alive))
 
 
     # метод - превратить словарь в список кортежей, упорядочить список по указанному элементу, вернуть:
@@ -614,18 +661,18 @@ class Stats():
                 genotype_id = self.list_of_possible_genotypes[current_index]
 
                 # добавить цвет квадратику зависимо от количества появлений гена в популяции:
-                if genotype_id in DICT_GENOTYPES:
-                    genotype_appears = DICT_GENOTYPES[genotype_id][1]
+                if genotype_id in LIST_FOR_DICTS_GENOTYPES[current_stage]:
+                    genotype_appears = LIST_FOR_DICTS_GENOTYPES[current_stage][genotype_id][1]
                     if 0 <= genotype_appears < 10:
                         color = '#' + self.list_of_distribution_colors[ genotype_appears ]
                     else:
-                        color = '#0033cc'
+                        color = '#003300'
                 else:
                     color = '#e2e8e9'
 
                 # но если этот ген появился в самый первый день (изначально сгенерирован), перекрасить в синий:
-                if genotype_id in DICT_GENOTYPES:
-                    if DICT_GENOTYPES[genotype_id][0] == 1:
+                if genotype_id in LIST_FOR_DICTS_GENOTYPES[current_stage]:
+                    if LIST_FOR_DICTS_GENOTYPES[current_stage][genotype_id][0] == 1:
                         color = '#4834d4'
 
                 # добавить очередной квадратик-генотип в текущую строку:
@@ -659,8 +706,8 @@ class Stats():
                 genotype_id = self.list_of_possible_genotypes[current_index]
 
                 # добавить цвет квадратику зависимо от количества побед гена:
-                if genotype_id in DICT_GENOTYPES:
-                    genotype_wins = DICT_GENOTYPES[genotype_id][2]
+                if genotype_id in LIST_FOR_DICTS_GENOTYPES[current_stage]:
+                    genotype_wins = LIST_FOR_DICTS_GENOTYPES[current_stage][genotype_id][2]
                     if 0 <= genotype_wins < 10:
                         color = '#' + self.list_of_wins_colors[genotype_wins]
                     else:
@@ -731,27 +778,36 @@ class Stats():
         # - время запуска:
         our_html = replace('R_LAUNCH_TIME', current_time, our_html)
 
+        # - количество прошедших стадий:
+        our_html = replace('R_STAGES_TOTAL', str(MAX_STAGES), our_html)
+
         # - количество прошедших дней:
-        our_html = replace('R_DAYS_TOTAL', str(max_days), our_html)
+        our_html = replace('R_DAYS_TOTAL', str(MAX_DAYS_AT_STAGE * MAX_STAGES), our_html)
 
         # - день, когда произошли последние изменения в численности популяции:
         our_html = replace('R_DAY_LAST_CHANGES', str(population.day_of_last_changes), our_html)
 
         # - начальный и конечный размеры популяции:
         our_html = replace('R_PPL_INITIAL_SIZE', str(population.initial_size), our_html)
-        our_html = replace('R_PPL_FINAL_SIZE', str(population.how_many_rogues_alive), our_html)
+        our_html = replace('R_PPL_FINAL_SIZE', str(Population.how_many_rogues_alive), our_html)
 
-        # сколько всего разбойников появилось на свет:
-        our_html = replace('R_ROGUES_TOTAL', str(population.how_many_rogues), our_html)
+        # - сколько всего разбойников появилось на свет:
+        our_html = replace('R_ROGUES_TOTAL', str(Population.how_many_rogues), our_html)
 
         # сколько поколений образовалось:
         our_html = replace('R_GNR_TOTAL', str(population.generations), our_html)
 
-        # - количество уникальных генов:
-        our_html = replace('R_UNIQUE_GENOTYPES', str(len(DICT_GENOTYPES)), our_html)
+        # - подсчитать количество уникальных генотипов, для этого надо сформировать словарь для сбора генотипов всех стадий:
+        dict_for_unique_genotypes = {}
+        for current_dict in range( 0, len(LIST_FOR_DICTS_GENOTYPES) ):
+            for current_genotype in LIST_FOR_DICTS_GENOTYPES[current_dict]:
+                dict_for_unique_genotypes.setdefault(current_genotype, 0)
 
-        # информация о самом победоносном гене:
-        list_genotypes_top = stats.get_ordered_list_from_dict(DICT_GENOTYPES, inner_index=2)
+        # - длина этого словаря и есть количество уникальных генотипов за все стадии:
+        our_html = replace('R_UNIQUE_GENOTYPES', str(len(dict_for_unique_genotypes)), our_html)
+
+        # - информация о самом победоносном гене на последней стадии:
+        list_genotypes_top = stats.get_ordered_list_from_dict(LIST_FOR_DICTS_GENOTYPES[current_stage], inner_index=2)
         winner_name = list_genotypes_top[0][0]
         winner_born = list_genotypes_top[0][1][0]
         winner_wins = list_genotypes_top[0][1][2]
@@ -767,12 +823,15 @@ class Stats():
 
 # КОНСТАНТЫ:
 GENES_CHAIN_LENGTH = 0  # <-- длина цепочки генов (должна совпадать с количеством словарей экипировки)
+ROGUES_AT_BEGIN = 10  # <-- начальное население популяции (для каждой стадии)
+MAX_STAGES = 5  # <-- сколько стадий перезагрузки популяции должно пройти
+MAX_DAYS_AT_STAGE = 10 # <-- сколько дней будет содержать одна стадия перезагрузки популяции
 
 # список ссылок на словари экипировки:
 LINKS_TO_EQUIP_DICTS = [RIGHT_HANDS, LEFT_HANDS, GLOVES, HEADS, CHESTS, PANTS, BOOTS]
 
-# словарь для хранения статистики по генам:
-DICT_GENOTYPES = {}
+# список для хранения списка словарей со статистикой по генам (отдельный словарь для каждой стадии):
+LIST_FOR_DICTS_GENOTYPES = [{}] * MAX_STAGES
 
 # словарь для хранения статистики по дням:
 DICT_DAYS = {}
@@ -780,63 +839,93 @@ DICT_DAYS = {}
 # список, где будут храниться ссылки на всех когда-либо появившихся разбойников:
 ROGUES_LIST = list()
 
+# переменная для хранения значения текущей стадии (должна находиться в глобальной области видимости)
+current_stage = 0
+
+# КОНСТАНТЫ для точечного управления "отладкой" (выводом отчётов о работе функций/методов):
+DBG_rogue_mutate_genes = False
+DBG_rogue_generate_random_genes = False
+DBG_rogue_apply_genes = False
+DBG_rogue_calculate_rate = False
+DBG_rogue_mutate_gene = False
+DBG_rogue_do_win = False
+DBG_rogue_do_defeat = False
+DBG_rogue_wear_item = False
+DBG_challenger_perform_serie = False
+DBG_challenger_perform_one = False
+DBG_days_report = False  # <-- общий отчёт о кажом дне
+
 
 
 # ЗАПУСК:
 if __name__ == '__main__':
 
-    # создать объект статистики:
-    stats = Stats()
+    # засечь время:
+    time_begin = time()
 
-    # создать объект популяции и наполнить его разбойниками в указанном количестве, а также указать их биологические параметры:
-    population = Population(40, wins_to_reproduce=2, defeats_to_die=2)
-
-    # создать объект для управления состязаниями:
-    challenger = Challenger()
-
-    # "прочитать" популяцию:
-    print(population)
-
-    # запустить цикл на указанное количество дней (1 день = 1 столкновение у каждого (почти*) разбойника)
-    # * - когда в популяции в какой-то день нечётное количество разбойников, кто-то из них остаётся без пары и не дерётся в этот день
+    # запустить цикл на указанное количество стадий перезагрузки популяции:
+    max_days_for_current_stage = 0
     current_day = 1
-    max_days = 200
-    while current_day <= max_days:
+    while current_stage < MAX_STAGES:
 
-        # в начале каждого дня отрисовывать в HTML картину по распространённости генотипов:
-        filename = 'html_genotypes_distribution/day_' + str(current_day) + '.html'
-        stats.draw_genes_distribution(filename, current_day, create_autonomous_version=True)
+        # на старте ПЕРВОЙ стадии:
+        if current_stage == 0:
 
-        print('\n\nДЕНЬ/DAY', current_day)
-        challenger.perform_serie()
+            # создать объект статистики:
+            stats = Stats()
 
-        print('\nДень', current_day, 'завершён.')
-        print(population)
+            # создать объект популяции и наполнить его разбойниками в указанном количестве, а также указать их биологические параметры:
+            population = Population(ROGUES_AT_BEGIN, wins_to_reproduce=2, defeats_to_die=2)
 
-        # статистика для этого дня:
-        stats.add_new_day(current_day)
+            # создать объект для управления состязаниями:
+            challenger = Challenger()
 
-        # в конце каждого дня отрисовывать в HTML картину по победам генотипов:
-        filename = 'html_genotypes_wins/day_' + str(current_day) + '.html'
-        stats.draw_genes_wins(filename, current_day, create_autonomous_version=True)
+            # "прочитать" популяцию:
+            print(population)
 
-        current_day += 1
 
-    # вывести статистику генотипов:
-    print('\nУникальных генотипов ', len(DICT_GENOTYPES), ', вот они:', sep='')
-    print(DICT_GENOTYPES)
+        # высчитать новый максимум с учётом наступления новой стадии:
+        max_days_for_current_stage += MAX_DAYS_AT_STAGE
 
-    #print('list_of_possible_genotypes:')
-    #print(stats.list_of_possible_genotypes)
+        # запустить/продолжить цикл на доступное количество дней (1 день = 1 столкновение у каждого (почти*) разбойника)
+        # * - когда в популяции в какой-то день нечётное количество разбойников, кто-то из них остаётся без пары и не дерётся в этот день
+        while current_day <= max_days_for_current_stage:
+            print('st ' + str(current_stage) + ', day ' + str(current_day))
+            if DBG_days_report:
+                print('\n\nДЕНЬ/DAY', current_day)
+
+            # в начале каждого дня отрисовывать в HTML картину по распространённости генотипов:
+            filename = 'html_genotypes_distribution/day_' + str(current_day) + '.html'
+            stats.draw_genes_distribution(filename, current_day, create_autonomous_version=True)
+
+            # выполнить серию соревнований:
+            challenger.perform_serie()
+
+            if DBG_days_report:
+                print('\nДень', current_day, 'завершён.')
+                print(population)
+
+            # статистика для этого дня:
+            stats.add_new_day(current_day)
+
+            # в конце каждого дня отрисовывать в HTML картину по победам генотипов:
+            filename = 'html_genotypes_wins/day_' + str(current_day) + '.html'
+            stats.draw_genes_wins(filename, current_day, create_autonomous_version=True)
+
+            current_day += 1
+
+        # когда стадия подходит к концу, перезагрузить популяцию, оставив в ней указанное кол-во лучших генотипов:
+        population.reload(ROGUES_AT_BEGIN)
+
+        current_stage += 1
+
+
+    # теперь понизить назад счётчик текущей стадии, чтобы удобно работать со списком LIST_FOR_DICTS_GENOTYPES:
+    current_stage -= 1
 
     # вывести статистику дней:
     print('\nДНИ:')
     print(DICT_DAYS)
-
-    LIST_GENOTYPES_TOP = stats.get_ordered_list_from_dict(DICT_GENOTYPES, inner_index=2)
-
-    print('\nLIST_GENOTYPES_TOP:')
-    print(LIST_GENOTYPES_TOP)
 
     # нарисовать линейный график о динамике одновременно живущих разбойников:
     stats.draw_and_put_line_chart_to_file(DICT_DAYS, 1, 'живое население', 'дни', 'разбойников', 'charts/chart_population_demography.png')
@@ -846,6 +935,11 @@ if __name__ == '__main__':
 
     # создать общий HTML для изучения сессии:
     stats.create_index_html()
+
+    # вычислить затраченное время:
+    time_session = time() - time_begin
+    duration_info = 'работа программы длилась: ' + str(round(time_session, 2)) + ' сек.'
+    print('\n' + duration_info)
 
 else:
     print('__name__ is not "__main__".')
