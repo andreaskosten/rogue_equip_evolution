@@ -7,6 +7,7 @@
 <style>
 body {
     background-color: #fff;
+	font-family: 'Calibri';
     margin: 0px;
 }
 
@@ -40,6 +41,64 @@ p {
 
 #input_range {
 	margin: 0px 5px 0px 5px;
+}
+
+.title_small {
+	font-weight: bold;
+	font-size: 1.2em;
+}
+
+.text_btn {
+	background: #fff;
+    border: solid 3px #0984e3;
+    border-radius: 2px;
+    color: #0984e3;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 1.1em;
+    outline: none;
+    padding: 4px 7px 4px 7px;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+}
+.text_btn:hover {
+	background: #0984e3;
+    box-shadow: 5px 5px 30px #888888;
+    color: #fff;
+}
+
+.orange_btn {
+	border: solid 3px #d35400 !important;
+    color: #d35400 !important;
+}
+.orange_btn:hover {
+	background: #d35400 !important;
+    box-shadow: 5px 5px 30px #888888 !important;
+    color: #fff !important;
+}
+
+.inputs {
+	background-color: #ffffff;
+    border: 1px solid #cecece;
+    font-size: 1em;
+	font-weight: bold;
+    outline-color: #0a30f0;
+    padding: 3px;
+}
+
+.flex_CFsC {
+	display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.flex_RCC {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
 }
 </style>
 </head>
@@ -76,31 +135,49 @@ p {
 	
 	<div style='margin: 20px 12px 20px 12px;'>
 	
-		<div style='margin: 10px 0px 10px 0px' align='center'>
-			<p style='font-size: 1em'>показывается день: <span class='text_values' id='current_day_showing'>1</span></p>
-			
-			<div style='display: flex; flex-direction: row; justify-content: center; align-items: center;'>
-				<div><span class='btn_change_day' id='btn_day_prev'>&#8592;</span></div>
-				<div><input type='range' id='input_range' min='1' max='R_DAYS_TOTAL' value='1'></div>
-				<div><span class='btn_change_day' id='btn_day_next'>&#8594;</span></div>
+		<div style='margin: 4px 0px 10px 0px' align='center'>
+			<div style='display: flex; flex-direction: row; justify-content: center; align-items: flex-start;'>
+				
+				<div class='flex_CFsC' style='margin-right: 20px'>
+					<div><p class='title_small'>вручную</p></div>
+					<div>
+						<div class='flex_RCC' style='margin-top: 6px'>
+							<div><span class='btn_change_day' id='btn_day_prev'>&#8592;</span></div>
+							<div><input type='range' id='input_range' min='1' max='R_DAYS_TOTAL' value='1'></div>
+							<div><span class='btn_change_day' id='btn_day_next'>&#8594;</span></div>
+						</div>
+					</div>
+				</div>
+				
+				<div class='flex_CFsC' style='margin-left: 20px'>
+					<div><p class='title_small'>автоматическое воспроизведение</p></div>
+					<div>
+						<div class='flex_RCC'>
+							<div style='margin-right: 12px'><span class='text_btn' id='btn_run_from_begin'>запуск сначала</span></div>
+							<div style='margin-right: 12px'><span class='text_btn orange_btn' id='btn_pause'>пауза</span></div>
+							<div style='margin-right: 24px'><span class='text_btn' id='btn_run_from_current'>продолжить</span></div>
+							
+							<div style='' align='left'>
+								<p style='font-size: 0.8em; margin: 0px; padding: 0px'>задержка между слайдами, ms</p>
+								<input class='inputs' id='input_delay' value='200' size='4' style='font-size: 0.8em'>
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
+			
+			<p style='margin: 16px 0px 8px 0px; font-size: 1.2em'>показывается день: <span class='text_values' id='current_day_showing'>1</span></p>
 		</div>
 		
 		<!-- контейнеры с iframes, сгенерерированные объектом класса Stats -->
 		<div style='display: flex; flex-direction: row; justify-content: center; align-items: flex-start'>
 		
-			<div style='margin-right: 10px'>
-				<!-- подключение файла с визуализацией области генотипов (distribution) -->
-				<iframe id='iFRAME_distribution' src='html_genotypes_distribution/day_1.html' width='860' height='640' align='center'>
-						Ваш браузер не поддерживает плавающие фреймы!
-				</iframe>
+			<div style='margin-right: 5px' id='spawner_for_iframes_distribution'>
+				<!-- тут будет сгенерировано содержимое -->
 			</div>
 			
-			<div>
-				<!-- подключение файла с визуализацией области генотипов (wins) -->
-				<iframe id='iFRAME_wins' src='html_genotypes_wins/day_1.html' width='860' height='640' align='center'>
-						Ваш браузер не поддерживает плавающие фреймы!
-				</iframe>
+			<div style='margin-left: 5px' id='spawner_for_iframes_wins'>
+				<!-- тут будет сгенерировано содержимое -->
 			</div>
 		</div>
 		
@@ -121,17 +198,38 @@ p {
 		// когда страница готова:
 		$(document).ready(function(){
 			console.log('OK');
+			
+			// заполнить iframes:
+			let max_days = Number( $('#text_DAYS_TOTAL').text() );
+			
+			let template_d = "<iframe id='iFRAME_distribution_RDAY' class='iFRAME_d' src='html_genotypes_distribution/day_RDAY.html' width='860' height='640' align='center' style='display: none'>iframe error!</iframe>";
+			let template_w = "<iframe id='iFRAME_wins_RDAY' class='iFRAME_w' src='html_genotypes_wins/day_RDAY.html' width='860' height='640' align='center' style='display: none'>iframe error!</iframe>";
+			let new_frame = ''
+			
+			// сгенерировать фреймы для всех дней:
+			for( i = 1; i <= max_days; i++ ){
+				
+				new_frame = template_d.replace(/RDAY/g, i);
+				$("#spawner_for_iframes_distribution").append(new_frame);
+				
+				new_frame = template_w.replace(/RDAY/g, i);
+				$("#spawner_for_iframes_wins").append(new_frame);
+			}
+			
+			// сделать видимыми фреймы для первого дня:
+			$('#iFRAME_distribution_1').css('display', 'block');
+			$('#iFRAME_wins_1').css('display', 'block');
 		});
 		
 		// выбор дня:
         $('#input_range').on('input', function(){
             $('#current_day_showing').text( $(this).val() );
 			
-			let new_doc_distribution = 'html_genotypes_distribution/day_' + $(this).val() + '.html';
-			$('#iFRAME_distribution').attr('src', new_doc_distribution);
+			$('.iFRAME_d').css('display', 'none');
+			$('#iFRAME_distribution_' + $(this).val() ).css('display', 'block');
 			
-			let new_doc_wins = 'html_genotypes_wins/day_' + $(this).val() + '.html';
-			$('#iFRAME_wins').attr('src', new_doc_wins);
+			$('.iFRAME_w').css('display', 'none');
+			$('#iFRAME_wins_' + $(this).val() ).css('display', 'block');
         });
 		
 		// переключение дня кнопкой:
@@ -155,7 +253,60 @@ p {
 			
 			$('#input_range').val(new_day);
 			$('#input_range').trigger('input');
+		});
+		
+		// кнопка - воспроизвести сначала:
+		$('#btn_run_from_begin').click(function(){
 			
+			$('.iFRAME_d').css('display', 'none');
+			$('#iFRAME_distribution_1').css('display', 'block');
+			
+			
+			$('.iFRAME_w').css('display', 'none');
+			$('#iFRAME_wins_1').css('display', 'block');
+			
+			play_frames_to_the_last(1);
+		});
+		
+		// кнопка - воспроизвести с текущей позиции:
+		$('#btn_run_from_current').click(function(){
+			
+			let current = $('#input_range').val();
+			play_frames_to_the_last(current);
+		});
+		
+		// переменная для управления воспроизведением (автоматическим переключением) слайдов:
+		var SWITCHER = '';
+		
+		// начать воспроизведение с указанного слайда и до самого последнего:
+		function play_frames_to_the_last(current){
+			console.log('f launched');
+			
+			let delay = $('#input_delay').val();
+			
+			clearInterval(SWITCHER);
+			$('#btn_pause').removeClass('orange_btn');
+			
+			SWITCHER = setInterval(function(){
+				
+				$('#input_range').val(current);
+				$('#input_range').trigger('input');
+				
+				current++;
+				
+				if( current == Number( $('#text_DAYS_TOTAL').text() ) + 1 ){
+				
+					clearInterval(SWITCHER);
+					$('#btn_pause').addClass('orange_btn');
+				}
+			}, delay);
+		}
+		
+		// кнопка - поставить воспроизведение на паузу:
+		$('#btn_pause').click(function(){
+			
+			clearInterval(SWITCHER);
+			$('#btn_pause').addClass('orange_btn');
 		});
     </script>
 
