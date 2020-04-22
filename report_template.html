@@ -13,7 +13,15 @@ body {
 
 p {
     font-family: 'Calibri';
-    font-size: 1.1em;
+    font-size: 1em;
+	padding: 0px;
+	margin: 0px;
+}
+
+.title_small {
+	font-weight: bold;
+	font-size: 1.2em;
+	padding-bottom: 12px;
 }
 
 #panel_main {
@@ -41,11 +49,6 @@ p {
 
 #input_range {
 	margin: 0px 5px 0px 5px;
-}
-
-.title_small {
-	font-weight: bold;
-	font-size: 1.2em;
 }
 
 .text_btn {
@@ -100,27 +103,73 @@ p {
 	justify-content: center;
 	align-items: center;
 }
+
+/* стили для слайдов */
+.g_cont_d {
+	display: none;
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.g_cont_w {
+	display: none;
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.gen_f {
+    margin: 20px;
+}
+
+.gen {
+    display: inline-block;
+    margin: 3px;
+    width: 10px;
+    height: 10px;
+}.gen:hover { filter: brightness(1.2); }
+
+.tooltip_block {
+    background: white;
+    border: 1px solid rgb(230, 230, 230);
+    box-shadow: 1px 1px 4px rgba(15,15,15,.6);
+    color: rgb(82, 82, 82);
+    display: none;
+    font-size: 1.1em;
+	line-height: 16px;
+	padding: 8px;
+	position: absolute;
+	text-align: center;
+	z-index: 99;
+}
 </style>
 </head>
 
 
 <body>
 	
+	<div class='tooltip_block'></div>
+	
 	<!-- preloader -->
-    <style type="text/css">
+    <style type='text/css'>
         .preloader_bg { position: fixed; background: #fff; width: 100%; height: 100%; top: 0; left: 0; z-index: 100; }
         .preloader_content { position: fixed; left: 50%; top: 50%; transform: translate(-50%,-50%); z-index: 101; }
     </style>
 	
-    <script type="text/javascript">
+    <script type='text/javascript'>
         $(document).ready(function() {
             $('.preloader_bg').fadeOut(500);
             $('.preloader_content').fadeOut(500);
         });
     </script>
 	
-    <div class="preloader_bg"></div>
-    <div class="preloader_content"><p style='display: block; font-size: 2em; margin: auto; text-align: center; color: #222;'>ЗАГРУЗКА...</p></div>
+    <div class='preloader_bg'></div>
+    <div class='preloader_content'><p style='display: block; font-size: 2em; margin: auto; text-align: center; color: #222;'>ЗАГРУЗКА...</p></div>
 	
     <noscript>
         <style>
@@ -167,7 +216,7 @@ p {
 					<div>
 						<div class='flex_RCC' style='margin-top: 6px'>
 							<div><span class='btn_change_day' id='btn_day_prev'>&#8592;</span></div>
-							<div><input type='range' id='input_range' min='1' max='R_DAYS_TOTAL' value='1'></div>
+							<div><input type='range' id='input_range' min='1' max='R_DAYS_DRAWN' value='1'></div>
 							<div><span class='btn_change_day' id='btn_day_next'>&#8594;</span></div>
 						</div>
 					</div>
@@ -190,20 +239,26 @@ p {
 				</div>
 			</div>
 			
-			<p style='margin: 16px 0px 8px 0px; font-size: 1.2em'>показывается день: <span class='text_values' id='current_day_showing'>1</span></p>
+			<p style='margin: 16px 0px 8px 0px; font-size: 1.2em'>показывается запечатлённый эпизод: <span class='text_values' id='current_day_showing'>1</span></p>
 		</div>
 		
 		<!-- контейнеры с iframes, сгенерерированные объектом класса Stats -->
 		<div style='display: flex; flex-direction: row; justify-content: center; align-items: flex-start'>
 			
 			<!-- тут будут визуализациии области генотипов (с точки зрения их распространённости) -->
-			<div style='margin-right: 5px' id='spawner_for_iframes_distribution'>
-				<!-- тут будет сгенерировано содержимое -->
+			<div align='center'>
+				<p class='title_small'>распространённость генотипов</p>
+				<div style='margin-right: 5px' id='spawner_for_iframes_distribution'>
+					R_SLIDES_DISTRIBUTION
+				</div>
 			</div>
 			
 			<!-- тут будут визуализациии области генотипов (с точки зрения их побед) -->
-			<div style='margin-left: 5px' id='spawner_for_iframes_wins'>
-				<!-- тут будет сгенерировано содержимое -->
+			<div align='center'>
+				<p class='title_small'>победы генотипов</p>
+				<div style='margin-left: 5px' id='spawner_for_iframes_wins'>
+					R_SLIDES_WINS
+				</div>
 			</div>
 		</div>
 		
@@ -225,37 +280,20 @@ p {
 		$(document).ready(function(){
 			console.log('OK');
 			
-			// заполнить iframes:
-			let max_days = Number( $('#text_DAYS_TOTAL').text() );
-			
-			let template_d = "<iframe id='iFRAME_distribution_RDAY' class='iFRAME_d' src='html_genotypes_distribution/day_RDAY.html' width='860' height='640' align='center' style='display: none'>iframe error!</iframe>";
-			let template_w = "<iframe id='iFRAME_wins_RDAY' class='iFRAME_w' src='html_genotypes_wins/day_RDAY.html' width='860' height='640' align='center' style='display: none'>iframe error!</iframe>";
-			let new_frame = ''
-			
-			// сгенерировать фреймы для всех дней:
-			for( i = 1; i <= max_days; i++ ){
-				
-				new_frame = template_d.replace(/RDAY/g, i);
-				$("#spawner_for_iframes_distribution").append(new_frame);
-				
-				new_frame = template_w.replace(/RDAY/g, i);
-				$("#spawner_for_iframes_wins").append(new_frame);
-			}
-			
 			// сделать видимыми фреймы для первого дня:
-			$('#iFRAME_distribution_1').css('display', 'block');
-			$('#iFRAME_wins_1').css('display', 'block');
+			$('.d_1').css('display', 'flex');
+			$('.w_1').css('display', 'flex');
 		});
 		
 		// выбор дня:
         $('#input_range').on('input', function(){
             $('#current_day_showing').text( $(this).val() );
 			
-			$('.iFRAME_d').css('display', 'none');
-			$('#iFRAME_distribution_' + $(this).val() ).css('display', 'block');
+			$('.g_cont_d').css('display', 'none');
+			$('.d_' + $(this).val() ).css('display', 'flex');
 			
-			$('.iFRAME_w').css('display', 'none');
-			$('#iFRAME_wins_' + $(this).val() ).css('display', 'block');
+			$('.g_cont_w').css('display', 'none');
+			$('.w_' + $(this).val() ).css('display', 'flex');
         });
 		
 		// переключение дня кнопкой:
@@ -284,12 +322,11 @@ p {
 		// кнопка - воспроизвести сначала:
 		$('#btn_run_from_begin').click(function(){
 			
-			$('.iFRAME_d').css('display', 'none');
-			$('#iFRAME_distribution_1').css('display', 'block');
+			$('.g_cont_d').css('display', 'none');
+			$('.d_' + $(this).val() ).css('display', 'flex');
 			
-			
-			$('.iFRAME_w').css('display', 'none');
-			$('#iFRAME_wins_1').css('display', 'block');
+			$('.g_cont_w').css('display', 'none');
+			$('.w_' + $(this).val() ).css('display', 'flex');
 			
 			play_frames_to_the_last(1);
 		});
@@ -306,7 +343,6 @@ p {
 		
 		// начать воспроизведение с указанного слайда и до самого последнего:
 		function play_frames_to_the_last(current){
-			console.log('f launched');
 			
 			let delay = $('#input_delay').val();
 			
@@ -334,7 +370,23 @@ p {
 			clearInterval(SWITCHER);
 			$('#btn_pause').addClass('orange_btn');
 		});
+		
+		// наведён курсор на иконку генотипа:
+		$('body').on('mouseenter', '.gen', function(event){
+			
+			$('.tooltip_block').html('<span>'+ $(this).attr('id') + '</span>');
+			$('.tooltip_block').css('display', 'block');
+			$('.tooltip_block').offset({
+				top: $(this).offset().top - $('.tooltip_block').height() - 16,
+				left: $(this).offset().left - $('.tooltip_block').width() - 16
+			});
+		});
+		
+		// убран курсор с иконки генотипа:
+		$('body').on('mouseleave', '.gen', function(event){
+			$('.tooltip_block').css('display', 'none');
+		});
     </script>
-
+	
 </body>
 </html>
