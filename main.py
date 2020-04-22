@@ -34,7 +34,7 @@ class Population():
     # счётчик поколений:
     generations = 0
 
-    # рекорд количества побед у одного разбойника в популяции, а также его имя и гены:
+    # рекорд количества побед у одного разбойника в популяции, а также его имя и генотип:
     record_max_wins = 0
     max_winner_name = 'none'
     max_winner_genes = 'none'
@@ -70,7 +70,7 @@ class Population():
         text = 'Популяция:\n'
         text += 'поколений: ' + str(self.generations) + '\n'
         text += 'всего субъектов: ' + str(self.how_many_rogues) + '\n'
-        text += 'живых субъектов: ' + str(self.how_many_rogues_alive) + '\n'
+        text += 'живых субъектов: ' + str(Population.how_many_rogues_alive) + '\n'
         text += 'рекорд побед: ' + str(self.record_max_wins) + '\n'
         text += 'имя рекордсмена: ' + str(self.max_winner_name) + '\n'
         text += 'генотип рекордсмена: ' + str(self.max_winner_genes) + '\n'
@@ -81,7 +81,7 @@ class Population():
     def reload(self, how_many_to_save):
 
         # обнулить кол-во разбойников:
-        how_many_rogues_alive = 0
+        Population.how_many_rogues_alive = 0
 
         # "убить" всех существующих разбойников:
         for x in ROGUES_LIST:
@@ -111,7 +111,7 @@ class Population():
 
 # класс Разбойника
 class Rogue():
-    """Класс описывает механику тестируемого персонажа, а также управляет его генами."""
+    """Класс описывает механику тестируемого персонажа, а также управляет его генами (генотипом)."""
 
     # при создании экземпляра:
     def __init__(self, genes_list_inherited, parent_generation, from_parent=True, genes_can_mutate=True):
@@ -222,17 +222,17 @@ class Rogue():
         return expectation_damage
 
 
-    # сгенерировать случайный набор генов:
+    # сгенерировать случайный набор генов (генотип):
     def generate_random_genes(self):
         dbg = DBG_rogue_generate_random_genes
 
-        self.my_genes[0] = randrange(1, len(RIGHT_HANDS))    # <-- для правой руки:
-        self.my_genes[1] = randrange(1, len(LEFT_HANDS))     # <-- для левой руки:
-        self.my_genes[2] = randrange(1, len(GLOVES))         # <-- для рукавиц:
-        self.my_genes[3] = randrange(1, len(HEADS))          # <-- для головы:
-        self.my_genes[4] = randrange(1, len(CHESTS))         # <-- для нагрудника:
-        self.my_genes[5] = randrange(1, len(PANTS))          # <-- для штанов:
-        self.my_genes[6] = randrange(1, len(BOOTS))          # <-- для обуви:
+        self.my_genes[0] = randrange(0, len(RIGHT_HANDS))    # <-- для правой руки:
+        self.my_genes[1] = randrange(0, len(LEFT_HANDS))     # <-- для левой руки:
+        self.my_genes[2] = randrange(0, len(GLOVES))         # <-- для рукавиц:
+        self.my_genes[3] = randrange(0, len(HEADS))          # <-- для головы:
+        self.my_genes[4] = randrange(0, len(CHESTS))         # <-- для нагрудника:
+        self.my_genes[5] = randrange(0, len(PANTS))          # <-- для штанов:
+        self.my_genes[6] = randrange(0, len(BOOTS))          # <-- для обуви:
 
         if dbg:  # для отладки:
             print('\nf "generate_random_genes":' + '\n\tgenes generated:\n\t', end='')
@@ -332,7 +332,7 @@ class Rogue():
             print('\tnew gene value: ' + str(new_value) + '\n\ttries: ' + str(tries))
 
 
-    # "применить" гены путём надевания обусловленной ими экипировки:
+    # "применить" гены (генотип) путём надевания обусловленной ими экипировки:
     def apply_genes(self):
         dbg = DBG_rogue_apply_genes
 
@@ -450,7 +450,7 @@ class Rogue():
 
         # удобочитаемый текст:
         description = 'Разбойник по имени ' + self.name +'\n'
-        description += 'гены: ' + genes_str + '\n'
+        description += 'генотип: ' + genes_str + '\n'
         description += using_equipment_names + '\n'
         description += 'рейтинг: ' + str(self.calculate_rate()) + ' очк.\n'
         description += 'сила атаки: ' + str(self.stat_attackpower) + ' ед.\n'
@@ -583,33 +583,31 @@ class Stats():
         self.side_y = int(self.genotypes_total / self.side_x)
         print('side_x =', self.side_x, 'side_y =', self.side_y)
 
-
         # объявить набор цветов для карты распространённости генотипов:
         self.list_of_distribution_colors = [''] * 11
         self.list_of_distribution_colors[0] = 'c0392b'
-        self.list_of_distribution_colors[1] = '62eace'
-        self.list_of_distribution_colors[2] = '4be7c8'
-        self.list_of_distribution_colors[3] = '35e3c1'
-        self.list_of_distribution_colors[4] = '1fe0ba'
-        self.list_of_distribution_colors[5] = '1ccaa7'
-        self.list_of_distribution_colors[6] = '18b495'
-        self.list_of_distribution_colors[7] = '159d82'
-        self.list_of_distribution_colors[8] = '12876f'
-        self.list_of_distribution_colors[9] = '0f705d'
-
+        self.list_of_distribution_colors[1] = 'bcf6ea'
+        self.list_of_distribution_colors[2] = 'a5f3e3'
+        self.list_of_distribution_colors[3] = '8ff0dc'
+        self.list_of_distribution_colors[4] = '78edd5'
+        self.list_of_distribution_colors[5] = '62eace'
+        self.list_of_distribution_colors[6] = '4be7c8'
+        self.list_of_distribution_colors[7] = '35e3c1'
+        self.list_of_distribution_colors[8] = '1fe0ba'
+        self.list_of_distribution_colors[9] = '1ccaa7'
 
         # объявить набор цветов для карты побед генотипов:
         self.list_of_wins_colors = [''] * 10
-        self.list_of_wins_colors[0] = 'c0392b'
-        self.list_of_wins_colors[1] = 'f39c12'
-        self.list_of_wins_colors[2] = 'acecba'
-        self.list_of_wins_colors[3] = '98e7a9'
-        self.list_of_wins_colors[4] = '83e298'
-        self.list_of_wins_colors[5] = '6edd86'
-        self.list_of_wins_colors[6] = '5ad875'
-        self.list_of_wins_colors[7] = '45d364'
-        self.list_of_wins_colors[8] = '30cf53'
-        self.list_of_wins_colors[9] = '2cba4a'
+        self.list_of_wins_colors[0] = 'c1f0cd'
+        self.list_of_wins_colors[1] = 'adebbc'
+        self.list_of_wins_colors[2] = '98e6ac'
+        self.list_of_wins_colors[3] = '84e19b'
+        self.list_of_wins_colors[4] = '6fdc8b'
+        self.list_of_wins_colors[5] = '5bd77a'
+        self.list_of_wins_colors[6] = '46d269'
+        self.list_of_wins_colors[7] = '32cd59'
+        self.list_of_wins_colors[8] = '2db950'
+        self.list_of_wins_colors[9] = '28a447'
 
         # инициализировать переменные для хранения набора отрисованных слайдов:
         self.htmls_distribution = ''
@@ -619,8 +617,8 @@ class Stats():
         self.days_drawn = 0
 
 
-    # метод - добавить новый ген и номер породившего его поколения в словарь,
-    # и/или добавить 1 в счётчик присутствия гена в популяции:
+    # метод - добавить новый генотип и номер породившего его поколения в словарь,
+    # и/или добавить 1 в счётчик присутствия генотипа в популяции:
     def genes_add_presence(self, genes, generation):
         genes_str = '-'.join(map(str, genes))
         LIST_FOR_DICTS_GENOTYPES[current_stage].setdefault(genes_str, (generation, 0, 0))
@@ -628,7 +626,7 @@ class Stats():
         LIST_FOR_DICTS_GENOTYPES[current_stage][genes_str] = (a, b + 1, c)
 
 
-    # метод - добавить 1 в счётчик побед гена:
+    # метод - добавить 1 в счётчик побед генотипа:
     def genes_add_win(self, genes):
         genes_str = '-'.join(map(str, genes))
         a, b, c = LIST_FOR_DICTS_GENOTYPES[current_stage][genes_str]
@@ -653,7 +651,7 @@ class Stats():
 
         self.days_drawn += 1
 
-        # отрисовать область, состоящую из <span>-квадратиков, где id будет равен коду генотипа:
+        # отрисовать область, состоящую из квадратиков, где id будет равен коду генотипа:
         HTML_slide = ''
         current_index = -1
         for y in range(0, self.side_y):
@@ -664,20 +662,22 @@ class Stats():
                 current_index += 1
                 genotype_id = self.list_of_possible_genotypes[current_index]
 
-                # добавить цвет квадратику зависимо от количества появлений гена в популяции:
+                # добавить цвет квадратику зависимо от количества появлений генотипа в популяции:
                 if genotype_id in LIST_FOR_DICTS_GENOTYPES[current_stage]:
                     genotype_appears = LIST_FOR_DICTS_GENOTYPES[current_stage][genotype_id][1]
                     if 0 <= genotype_appears < 10:
                         color = '#' + self.list_of_distribution_colors[ genotype_appears ]
                     else:
-                        color = '#003300'
+                        # если больше 10 появлений - чуть другой цвет:
+                        color = '008080'
                 else:
-                    color = '#e2e8e9'
+                    # если генотип не существовал:
+                    color = '#f0f3f4'
 
-                # но если этот ген появился в самый первый день (изначально сгенерирован), перекрасить в синий:
+                # но если этот генотип появился в самый первый день (изначально сгенерирован), перекрасить в особый цвет:
                 if genotype_id in LIST_FOR_DICTS_GENOTYPES[current_stage]:
                     if LIST_FOR_DICTS_GENOTYPES[current_stage][genotype_id][0] == 1:
-                        color = '#4834d4'
+                        color = '#ffff80'
 
                 # добавить очередной квадратик-генотип в текущую строку:
                 current_row += '<span class="gen" id="' + genotype_id + '" style="background-color: ' + color + '"></span>'
@@ -708,16 +708,22 @@ class Stats():
                 current_index += 1
                 genotype_id = self.list_of_possible_genotypes[current_index]
 
-                # добавить цвет квадратику зависимо от количества побед гена:
+                # добавить цвет квадратику зависимо от количества побед генотипа:
                 if genotype_id in LIST_FOR_DICTS_GENOTYPES[current_stage]:
                     genotype_wins = LIST_FOR_DICTS_GENOTYPES[current_stage][genotype_id][2]
-                    if 0 <= genotype_wins < 10:
-                        color = '#' + self.list_of_wins_colors[genotype_wins]
+                    if genotype_wins != 0:
+                        wins_index = int( genotype_wins // 2 )
+                        if 0 <= wins_index < 10:
+                            color = '#' + self.list_of_wins_colors[wins_index]
+                        else:
+                            # если больше 20 побед - чуть другой цвет:
+                            color = '008080'
                     else:
-                        # если больше 10 побед - синий цвет:
-                        color = '#33ccff'
+                        # если 0 побед:
+                        color = 'ffd6cc'
                 else:
-                    color = '#e2e8e9'
+                    # если генотип не существовал:
+                    color = '#f0f3f4'
 
                 # добавить очередной квадратик-генотип в текущую строку:
                 current_row += '<span class="gen" id="' + genotype_id + '" style="background-color: ' + color + '"></span>'
@@ -802,7 +808,7 @@ class Stats():
         # сколько поколений образовалось:
         our_html = replace('R_GNR_TOTAL', str(population.generations), our_html)
 
-        # - подсчитать количество уникальных генотипов, для этого надо сформировать словарь для сбора генотипов всех стадий:
+        # - подсчитать количество уникальных генотипов (со всех стадий):
         dict_for_unique_genotypes = {}
         for current_dict in range( 0, len(LIST_FOR_DICTS_GENOTYPES) ):
             for current_genotype in LIST_FOR_DICTS_GENOTYPES[current_dict]:
@@ -811,7 +817,7 @@ class Stats():
         # - длина этого словаря и есть количество уникальных генотипов за все стадии:
         our_html = replace('R_UNIQUE_GENOTYPES', str(len(dict_for_unique_genotypes)), our_html)
 
-        # - информация о самом победоносном гене на последней стадии:
+        # - информация о самом победоносном генотипе на последней стадии:
         list_genotypes_top = stats.get_ordered_list_from_dict(LIST_FOR_DICTS_GENOTYPES[current_stage], inner_index=2)
         winner_name = list_genotypes_top[0][0]
         winner_born = list_genotypes_top[0][1][0]
@@ -831,7 +837,6 @@ class Stats():
 
 
 # КОНСТАНТЫ:
-GENES_CHAIN_LENGTH = 0  # <-- длина цепочки генов (должна совпадать с количеством словарей экипировки)
 ROGUES_AT_BEGIN = 20  # <-- начальное население популяции (для каждой стадии)
 MAX_STAGES = 10  # <-- сколько стадий перезагрузки популяции должно пройти
 MAX_DAYS_AT_STAGE = 200 # <-- сколько дней будет содержать одна стадия перезагрузки популяции
@@ -840,7 +845,7 @@ SLIDING_FREQUENCY = 20 # <-- как часто нужно создавать HTM
 # список ссылок на словари экипировки:
 LINKS_TO_EQUIP_DICTS = [RIGHT_HANDS, LEFT_HANDS, GLOVES, HEADS, CHESTS, PANTS, BOOTS]
 
-# список для хранения списка словарей со статистикой по генам (отдельный словарь для каждой стадии):
+# список для хранения словарей со статистикой по генотипам (отдельный словарь для каждой стадии):
 LIST_FOR_DICTS_GENOTYPES = [{}] * MAX_STAGES
 
 # словарь для хранения статистики по дням:
