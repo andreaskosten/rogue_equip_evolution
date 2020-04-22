@@ -611,10 +611,12 @@ class Stats():
         self.list_of_wins_colors[8] = '30cf53'
         self.list_of_wins_colors[9] = '2cba4a'
 
+        # инициализировать переменные для хранения набора отрисованных слайдов:
+        self.htmls_distribution = ''
+        self.htmls_wins = ''
 
-
-        # прочесть в память набор тегов для того, чтобы файлы с полями генотипов можно было открывать отдельно:
-        self.autonomous_tags = read_file('autonomous_tags.txt')
+        # счётчик отрисованных дней:
+        self.days_drawn = 0
 
 
     # метод - добавить новый ген и номер породившего его поколения в словарь,
@@ -647,10 +649,12 @@ class Stats():
 
 
     # метод - отрисовать в HTML прямоугольную область, где показать "карту генотипов" с точки зрения их распространённости:
-    def draw_genes_distribution(self, filename, day_number, create_autonomous_version=False):
+    def draw_genes_distribution(self, day_num, create_autonomous_version=False):
+
+        self.days_drawn += 1
 
         # отрисовать область, состоящую из <span>-квадратиков, где id будет равен коду генотипа:
-        HTML_genotype_field = ''
+        HTML_slide = ''
         current_index = -1
         for y in range(0, self.side_y):
             current_row = ''
@@ -676,27 +680,26 @@ class Stats():
                         color = '#4834d4'
 
                 # добавить очередной квадратик-генотип в текущую строку:
-                current_row += '<span class="sq_genotype" id="' + genotype_id + '" style="background-color: ' + color + '"></span>'
+                current_row += '<span class="gen" id="' + genotype_id + '" style="background-color: ' + color + '"></span>'
 
             # когда вся строка сформирована, добавить её в код всей области:
-            HTML_genotype_field += current_row + '<br>\n'
+            HTML_slide += current_row + '<br>\n'
 
         # закончить оформление области:
-        HTML_genotype_field = '\n\n<div id="outer_container"><div id="genotype_field">\n' + HTML_genotype_field + '</div></div>\n'
-
-        # если нужно иметь возможность открыть этот файл отдельно, то добавить недостающие теги:
-        if create_autonomous_version:
-            HTML_genotype_field = self.autonomous_tags + HTML_genotype_field + '\n</body>\n</html>'
+        HTML_slide = '\n\n<div class="g_cont_d d_' + str(self.days_drawn) + '"><p>день ' + str(day_num) + '</p><div class="gen_f">\n' + HTML_slide + '</div></div>\n'
 
         # сохранить область в файл, который потом будет считываться через файл index.html:
-        save_data_to_file(filename, HTML_genotype_field)
+        #save_data_to_file(filename, HTML_slide)
+
+        # сохранить область в переменную:
+        self.htmls_distribution += HTML_slide
 
 
     # метод - отрисовать в HTML прямоугольную область, где показать "карту генотипов" с точки зрения их побед:
-    def draw_genes_wins(self, filename, day_number, create_autonomous_version=False):
+    def draw_genes_wins(self, day_num, create_autonomous_version=False):
 
         # отрисовать область, состоящую из <span>-квадратиков, где id будет равен коду генотипа:
-        HTML_genotype_field = ''
+        HTML_slide = ''
         current_index = -1
         for y in range(0, self.side_y):
             current_row = ''
@@ -717,20 +720,19 @@ class Stats():
                     color = '#e2e8e9'
 
                 # добавить очередной квадратик-генотип в текущую строку:
-                current_row += '<span class="sq_genotype" id="' + genotype_id + '" style="background-color: ' + color + '"></span>'
+                current_row += '<span class="gen" id="' + genotype_id + '" style="background-color: ' + color + '"></span>'
 
             # когда вся строка сформирована, добавить её в код всей области:
-            HTML_genotype_field += current_row + '<br>\n'
+            HTML_slide += current_row + '<br>\n'
 
         # закончить оформление области:
-        HTML_genotype_field = '\n\n<div id="outer_container"><div id="genotype_field">\n' + HTML_genotype_field + '</div></div>\n'
-
-        # если нужно иметь возможность открыть этот файл отдельно, то добавить недостающие теги:
-        if create_autonomous_version:
-            HTML_genotype_field = self.autonomous_tags + HTML_genotype_field + '\n</body>\n</html>'
+        HTML_slide = '\n\n<div class="g_cont_w w_' + str(self.days_drawn) + '"><p>день ' + str(day_num) + '</p><div class="gen_f">\n' + HTML_slide + '</div></div>\n'
 
         # сохранить область в файл, который потом будет считываться через файл index.html:
-        save_data_to_file(filename, HTML_genotype_field)
+        #save_data_to_file(filename, HTML_slide)
+
+        # сохранить область в переменную:
+        self.htmls_wins += HTML_slide
 
 
     # метод - отрисовать график при помощи matplotlib.pyplot:
@@ -784,6 +786,9 @@ class Stats():
         # - количество прошедших дней:
         our_html = replace('R_DAYS_TOTAL', str(MAX_DAYS_AT_STAGE * MAX_STAGES), our_html)
 
+        # - количество отрисованных на слайдах дней:
+        our_html = replace('R_DAYS_DRAWN', str(self.days_drawn), our_html)
+
         # - день, когда произошли последние изменения в численности популяции:
         our_html = replace('R_DAY_LAST_CHANGES', str(population.day_of_last_changes), our_html)
 
@@ -815,6 +820,10 @@ class Stats():
         our_html = replace('R_GENOTYPE_WINNER_BORN', str(winner_born), our_html)
         our_html = replace('R_GENOTYPE_WINNER_WINS', str(winner_wins), our_html)
 
+        # - слайды:
+        our_html = replace('R_SLIDES_DISTRIBUTION', self.htmls_distribution, our_html)
+        our_html = replace('R_SLIDES_WINS', self.htmls_wins, our_html)
+
         # сохранить в интерактивный файл-отчёт:
         saving_status = save_data_to_file('report ' + current_time + '.html', our_html)
         print(saving_status)
@@ -823,9 +832,10 @@ class Stats():
 
 # КОНСТАНТЫ:
 GENES_CHAIN_LENGTH = 0  # <-- длина цепочки генов (должна совпадать с количеством словарей экипировки)
-ROGUES_AT_BEGIN = 10  # <-- начальное население популяции (для каждой стадии)
-MAX_STAGES = 5  # <-- сколько стадий перезагрузки популяции должно пройти
-MAX_DAYS_AT_STAGE = 10 # <-- сколько дней будет содержать одна стадия перезагрузки популяции
+ROGUES_AT_BEGIN = 20  # <-- начальное население популяции (для каждой стадии)
+MAX_STAGES = 10  # <-- сколько стадий перезагрузки популяции должно пройти
+MAX_DAYS_AT_STAGE = 200 # <-- сколько дней будет содержать одна стадия перезагрузки популяции
+SLIDING_FREQUENCY = 20 # <-- как часто нужно создавать HTML-слайды с полями генотипов (1 = раз в день, 10 = раз в 10 дней)
 
 # список ссылок на словари экипировки:
 LINKS_TO_EQUIP_DICTS = [RIGHT_HANDS, LEFT_HANDS, GLOVES, HEADS, CHESTS, PANTS, BOOTS]
@@ -853,7 +863,7 @@ DBG_rogue_do_defeat = False
 DBG_rogue_wear_item = False
 DBG_challenger_perform_serie = False
 DBG_challenger_perform_one = False
-DBG_days_report = False  # <-- общий отчёт о кажом дне
+DBG_days_report = False  # <-- общий отчёт о каждом дне
 
 
 
@@ -894,9 +904,9 @@ if __name__ == '__main__':
             if DBG_days_report:
                 print('\n\nДЕНЬ/DAY', current_day)
 
-            # в начале каждого дня отрисовывать в HTML картину по распространённости генотипов:
-            filename = 'html_genotypes_distribution/day_' + str(current_day) + '.html'
-            stats.draw_genes_distribution(filename, current_day, create_autonomous_version=True)
+            # в начале каждого SLIDING_FREQUENCY дня (а также в первый и последний) отрисовывать слайды по распространённости генотипов:
+            if current_day % SLIDING_FREQUENCY == 0 or current_day == 1 or current_day == MAX_DAYS_AT_STAGE * MAX_STAGES:
+                stats.draw_genes_distribution(current_day, create_autonomous_version=False)
 
             # выполнить серию соревнований:
             challenger.perform_serie()
@@ -908,9 +918,9 @@ if __name__ == '__main__':
             # статистика для этого дня:
             stats.add_new_day(current_day)
 
-            # в конце каждого дня отрисовывать в HTML картину по победам генотипов:
-            filename = 'html_genotypes_wins/day_' + str(current_day) + '.html'
-            stats.draw_genes_wins(filename, current_day, create_autonomous_version=True)
+            # в конце каждого SLIDING_FREQUENCY дня (а также в первый и последний) отрисовывать слайды по победам генотипов:
+            if current_day % SLIDING_FREQUENCY == 0 or current_day == 1 or current_day == MAX_DAYS_AT_STAGE * MAX_STAGES:
+                stats.draw_genes_wins(current_day, create_autonomous_version=False)
 
             current_day += 1
 
