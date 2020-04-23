@@ -104,6 +104,13 @@ p {
 	align-items: center;
 }
 
+.flex_RLC {
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-start;
+	align-items: center;
+}
+
 /* стили для слайдов */
 .g_cont_d {
 	display: none;
@@ -133,6 +140,24 @@ p {
     width: 10px;
     height: 10px;
 }.gen:hover { filter: brightness(1.2); }
+
+.gen_legend {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+}.gen:hover { filter: brightness(1.2); }
+
+.gen_legend_one {
+	margin-right: 16px;
+}
+
+.div_legend {
+	width: 80%;
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-start;
+	align-items: center;
+}
 
 .tooltip_block {
     background: white;
@@ -248,16 +273,76 @@ p {
 			<!-- тут будут визуализациии области генотипов (с точки зрения их распространённости) -->
 			<div align='center'>
 				<p class='title_small'>распространённость генотипов</p>
+				
 				<div style='margin-right: 5px' id='spawner_for_iframes_distribution'>
 					R_SLIDES_DISTRIBUTION
+				</div>
+				
+				<div class='div_legend'>
+					
+					<div>
+						<div class='flex_RLC'>
+							<span class='gen_legend gen_legend_one' style='background-color: #ffff80'></span>
+							<p>сгенерирован в 1-й день</p>
+						</div>
+						<div class='flex_RLC'>
+							<span class='gen_legend gen_legend_one' style='background-color: #008080'></span>
+							<p>больше 10 появлений</p>
+						</div>
+						<div class='flex_RLC'>
+							<span class='gen_legend gen_legend_one' style='background-color: #f0f3f4'></span>
+							<p>не существовал</p>
+						</div>
+					</div>
+					
+					<div style='margin-left: 32px'>
+						<div class='flex_RLC' style='margin-left: 32px'>
+							<div style='margin-right: 8px'><p>меньше появлений</p></div>
+							<div><span class='gen_legend' style='background-color: #bcf6ea'></span></div>
+							<div><span class='gen_legend' style='background-color: #8ff0dc'></span></div>
+							<div><span class='gen_legend' style='background-color: #62eace'></span></div>
+							<div><span class='gen_legend' style='background-color: #35e3c1'></span></div>
+							<div><span class='gen_legend' style='background-color: #1ccaa7'></span></div>
+							<div style='margin-left: 8px'><p>больше появлений</p></div>
+						</div>
+					</div>
 				</div>
 			</div>
 			
 			<!-- тут будут визуализациии области генотипов (с точки зрения их побед) -->
 			<div align='center'>
 				<p class='title_small'>победы генотипов</p>
+				
 				<div style='margin-left: 5px' id='spawner_for_iframes_wins'>
 					R_SLIDES_WINS
+				</div>
+				
+				<div class='div_legend'>
+					
+					<div>
+						<div class='flex_RLC'>
+							<span class='gen_legend gen_legend_one' style='background-color: #ffd6cc'></span>
+							<p>ни одной победы</p>
+						</div>
+						<div class='flex_RLC'>
+							<span class='gen_legend gen_legend_one' style='background-color: #008080'></span>
+							<p>20 и более побед</p>
+						</div>
+						<div class='flex_RLC'>
+							<span class='gen_legend gen_legend_one' style='background-color: #f0f3f4'></span>
+							<p>не существовал</p>
+						</div>
+					</div>
+					
+					<div class='flex_RLC' style='margin-left: 32px'>
+						<div style='margin-right: 8px'><p>меньше побед</p></div>
+						<div><span class='gen_legend' style='background-color: #c1f0cd'></span></div>
+						<div><span class='gen_legend' style='background-color: #98e6ac'></span></div>
+						<div><span class='gen_legend' style='background-color: #6fdc8b'></span></div>
+						<div><span class='gen_legend' style='background-color: #46d269'></span></div>
+						<div><span class='gen_legend' style='background-color: #2db950'></span></div>
+						<div style='margin-left: 8px'><p>больше побед</p></div>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -356,7 +441,7 @@ p {
 				
 				current++;
 				
-				if( current == Number( $('#text_DAYS_TOTAL').text() ) + 1 ){
+				if( current > Number( $('#input_range').attr('max') ) ){
 				
 					clearInterval(SWITCHER);
 					$('#btn_pause').addClass('orange_btn');
