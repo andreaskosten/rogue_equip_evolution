@@ -151,6 +151,10 @@ p {
 	margin-right: 16px;
 }
 
+.text_legend {
+	font-size: 0.9em;
+}
+
 .div_legend {
 	width: 80%;
 	display: flex;
@@ -208,8 +212,7 @@ p {
 		<div style='margin-right: 32px'>
 			<table class='report_table'>
 				<tr><td class='right_p'>время запуска:</td><td><span class='text_values'>R_LAUNCH_TIME</span></td></tr>
-				<tr><td class='right_p'>стадий прошло:</td><td><span class='text_values' id='R_STAGES_TOTAL'>R_STAGES_TOTAL</span></td></tr>
-				<tr><td class='right_p'>дней прошло:</td><td><span class='text_values' id='text_DAYS_TOTAL'>R_DAYS_TOTAL</span></td></tr>
+				<tr><td class='right_p'>стадий * дней в стадии = дней:</td><td><span class='text_values' id='R_STAGES_TOTAL'>R_STAGES_TOTAL</span> * <span class='text_values'>R_DAYS_IN_STAGE</span> = <span class='text_values' id='text_DAYS_TOTAL'>R_DAYS_TOTAL</span></td></tr>
 				<tr><td class='right_p'>начальный размер популяции:</td><td><span class='text_values'>R_PPL_INITIAL_SIZE</span></td></tr>
 				<tr><td class='right_p'>конечный размер популяции:</td><td><span class='text_values'>R_PPL_FINAL_SIZE</span></td></tr>
 				<tr><td class='right_p'>разбойников всего:</td><td><span class='text_values'>R_ROGUES_TOTAL</span></td></tr>
@@ -221,8 +224,8 @@ p {
 		
 		<div>
 			<table class='report_table'>
-				<tr><td class='right_p'>уникальных генов:</td><td><span class='text_values'>R_UNIQUE_GENOTYPES</span></td></tr>
-				<tr><td class='right_p'>самый победоносный ген:</td><td><span class='text_values'>R_GENOTYPE_WINNER_NAME</span></td></tr>
+				<tr><td class='right_p'>уникальных/возможных генотипов:</td><td><span class='text_values'><b>R_UNIQUE_GENOTYPES</b> / R_POSSIBLE_GENOTYPES</span></td></tr>
+				<tr><td class='right_p'>генотип-победитель:</td><td><span class='text_values'>R_GENOTYPE_WINNER_NAME</span></td></tr>
 				<tr><td class='right_p'>побед у этого гена:</td><td><span class='text_values'>R_GENOTYPE_WINNER_WINS</span></td></tr>
 				<tr><td class='right_p'>появился в поколении:</td><td><span class='text_values'>R_GENOTYPE_WINNER_BORN</span></td></tr>
 			</table>
@@ -267,11 +270,11 @@ p {
 			<p style='margin: 16px 0px 8px 0px; font-size: 1.2em'>показывается запечатлённый эпизод: <span class='text_values' id='current_day_showing'>1</span></p>
 		</div>
 		
-		<!-- контейнеры с iframes, сгенерерированные объектом класса Stats -->
+		<!-- контейнеры со слайдами, сгенерерированными объектом класса Stats -->
 		<div style='display: flex; flex-direction: row; justify-content: center; align-items: flex-start'>
 			
 			<!-- тут будут визуализациии области генотипов (с точки зрения их распространённости) -->
-			<div align='center'>
+			<div align='center' style='min-width: 640px'>
 				<p class='title_small'>распространённость генотипов</p>
 				
 				<div style='margin-right: 5px' id='spawner_for_iframes_distribution'>
@@ -283,34 +286,32 @@ p {
 					<div>
 						<div class='flex_RLC'>
 							<span class='gen_legend gen_legend_one' style='background-color: #ffff80'></span>
-							<p>сгенерирован в 1-й день</p>
+							<p class='text_legend' nowrap>изначальный</p>
 						</div>
 						<div class='flex_RLC'>
 							<span class='gen_legend gen_legend_one' style='background-color: #008080'></span>
-							<p>больше 10 появлений</p>
+							<p class='text_legend' nowrap>больше 10 появлений</p>
 						</div>
 						<div class='flex_RLC'>
 							<span class='gen_legend gen_legend_one' style='background-color: #f0f3f4'></span>
-							<p>не существовал</p>
+							<p class='text_legend' nowrap>не существовал</p>
 						</div>
 					</div>
 					
-					<div style='margin-left: 32px'>
-						<div class='flex_RLC' style='margin-left: 32px'>
-							<div style='margin-right: 8px'><p>меньше появлений</p></div>
-							<div><span class='gen_legend' style='background-color: #bcf6ea'></span></div>
-							<div><span class='gen_legend' style='background-color: #8ff0dc'></span></div>
-							<div><span class='gen_legend' style='background-color: #62eace'></span></div>
-							<div><span class='gen_legend' style='background-color: #35e3c1'></span></div>
-							<div><span class='gen_legend' style='background-color: #1ccaa7'></span></div>
-							<div style='margin-left: 8px'><p>больше появлений</p></div>
-						</div>
+					<div class='flex_RLC' style='margin-left: 24px'>
+						<div class='text_legend' style='margin-right: 8px'><p>меньше появлений</p></div>
+						<div><span class='gen_legend' style='background-color: #bcf6ea'></span></div>
+						<div><span class='gen_legend' style='background-color: #8ff0dc'></span></div>
+						<div><span class='gen_legend' style='background-color: #62eace'></span></div>
+						<div><span class='gen_legend' style='background-color: #35e3c1'></span></div>
+						<div><span class='gen_legend' style='background-color: #1ccaa7'></span></div>
+						<div class='text_legend' style='margin-left: 8px'><p>больше появлений</p></div>
 					</div>
 				</div>
 			</div>
 			
 			<!-- тут будут визуализациии области генотипов (с точки зрения их побед) -->
-			<div align='center'>
+			<div align='center' style='min-width: 640px'>
 				<p class='title_small'>победы генотипов</p>
 				
 				<div style='margin-left: 5px' id='spawner_for_iframes_wins'>
@@ -322,26 +323,26 @@ p {
 					<div>
 						<div class='flex_RLC'>
 							<span class='gen_legend gen_legend_one' style='background-color: #ffd6cc'></span>
-							<p>ни одной победы</p>
+							<p class='text_legend' nowrap>ни одной победы</p>
 						</div>
 						<div class='flex_RLC'>
 							<span class='gen_legend gen_legend_one' style='background-color: #008080'></span>
-							<p>20 и более побед</p>
+							<p class='text_legend' nowrap>20 и более побед</p>
 						</div>
 						<div class='flex_RLC'>
 							<span class='gen_legend gen_legend_one' style='background-color: #f0f3f4'></span>
-							<p>не существовал</p>
+							<p class='text_legend' nowrap>не существовал</p>
 						</div>
 					</div>
 					
-					<div class='flex_RLC' style='margin-left: 32px'>
-						<div style='margin-right: 8px'><p>меньше побед</p></div>
+					<div class='flex_RLC' style='margin-left: 24px'>
+						<div class='text_legend' style='margin-right: 8px'><p>меньше побед</p></div>
 						<div><span class='gen_legend' style='background-color: #c1f0cd'></span></div>
 						<div><span class='gen_legend' style='background-color: #98e6ac'></span></div>
 						<div><span class='gen_legend' style='background-color: #6fdc8b'></span></div>
 						<div><span class='gen_legend' style='background-color: #46d269'></span></div>
 						<div><span class='gen_legend' style='background-color: #2db950'></span></div>
-						<div style='margin-left: 8px'><p>больше побед</p></div>
+						<div class='text_legend' style='margin-left: 8px'><p>больше побед</p></div>
 					</div>
 				</div>
 			</div>
@@ -354,6 +355,10 @@ p {
 			
 			<div style='margin: 20px 0px 00px 0px' align='center'>
 				<img src='charts/chart_population_total.png'>
+			</div>
+			
+			<div style='margin: 20px 0px 00px 0px' align='center'>
+				<img src='charts/chart_genotypes_variety.png'>
 			</div>
 		</div>
 	</div>
