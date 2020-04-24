@@ -14,9 +14,9 @@ from operations_with_files import *
 from charts_functions import *
 
 # импортировать необходимый набор словарей с экипировкой:
-from equipment_custom import *
+#from equipment_custom import *
 #from equipment_wow_classic import *
-#from equipment_obvious_strong import *
+from equipment_obvious_strong import *
 #from equipment_obvious_weak import *
 
 
@@ -625,6 +625,9 @@ class Stats():
         a, b, c = LIST_FOR_DICTS_GENOTYPES[current_stage][genes_str]
         LIST_FOR_DICTS_GENOTYPES[current_stage][genes_str] = (a, b + 1, c)
 
+        # также добавить генотип в словарь-реестр генотипов:
+        DICT_UNIQUE_GENOTYPES.setdefault(genes_str, 1)
+
 
     # метод - добавить 1 в счётчик побед генотипа:
     def genes_add_win(self, genes):
@@ -636,7 +639,7 @@ class Stats():
     # метод - добавить данные по дню:
     def add_new_day(self, day_number):
         global DICT_DAYS
-        DICT_DAYS.setdefault(day_number, (Population.how_many_rogues, Population.how_many_rogues_alive))
+        DICT_DAYS.setdefault(day_number, (Population.how_many_rogues, Population.how_many_rogues_alive, len(DICT_UNIQUE_GENOTYPES)))
 
 
     # метод - превратить словарь в список кортежей, упорядочить список по указанному элементу, вернуть:
@@ -716,7 +719,7 @@ class Stats():
                         if 0 <= wins_index < 10:
                             color = '#' + self.list_of_wins_colors[wins_index]
                         else:
-                            # если больше 20 побед - чуть другой цвет:
+                            # если 20 и более побед - чуть другой цвет:
                             color = '008080'
                     else:
                         # если 0 побед:
@@ -786,10 +789,9 @@ class Stats():
         # - время запуска:
         our_html = replace('R_LAUNCH_TIME', current_time, our_html)
 
-        # - количество прошедших стадий:
+        # - количество прошедших стадий, дней в стадии и дней всего:
         our_html = replace('R_STAGES_TOTAL', str(MAX_STAGES), our_html)
-
-        # - количество прошедших дней:
+        our_html = replace('R_DAYS_IN_STAGE', str(MAX_DAYS_AT_STAGE), our_html)
         our_html = replace('R_DAYS_TOTAL', str(MAX_DAYS_AT_STAGE * MAX_STAGES), our_html)
 
         # - количество отрисованных на слайдах дней:
@@ -817,6 +819,9 @@ class Stats():
         # - длина этого словаря и есть количество уникальных генотипов за все стадии:
         our_html = replace('R_UNIQUE_GENOTYPES', str(len(dict_for_unique_genotypes)), our_html)
 
+        # - потенциальный максимум возможных генотипов:
+        our_html = replace('R_POSSIBLE_GENOTYPES', str(self.genotypes_total), our_html)
+
         # - информация о самом победоносном генотипе на последней стадии:
         list_genotypes_top = stats.get_ordered_list_from_dict(LIST_FOR_DICTS_GENOTYPES[current_stage], inner_index=2)
         winner_name = list_genotypes_top[0][0]
@@ -837,16 +842,19 @@ class Stats():
 
 
 # КОНСТАНТЫ:
-ROGUES_AT_BEGIN = 20  # <-- начальное население популяции (для каждой стадии)
-MAX_STAGES = 10  # <-- сколько стадий перезагрузки популяции должно пройти
-MAX_DAYS_AT_STAGE = 200 # <-- сколько дней будет содержать одна стадия перезагрузки популяции
-SLIDING_FREQUENCY = 20 # <-- как часто нужно создавать HTML-слайды с полями генотипов (1 = раз в день, 10 = раз в 10 дней)
+ROGUES_AT_BEGIN = 100  # <-- начальное население популяции (для каждой стадии)
+MAX_STAGES = 20  # <-- сколько стадий перезагрузки популяции должно пройти
+MAX_DAYS_AT_STAGE = 50 # <-- сколько дней будет содержать одна стадия перезагрузки популяции
+SLIDING_FREQUENCY = 5 # <-- как часто нужно создавать HTML-слайды с полями генотипов (1 = раз в день, 10 = раз в 10 дней)
 
 # список ссылок на словари экипировки:
 LINKS_TO_EQUIP_DICTS = [RIGHT_HANDS, LEFT_HANDS, GLOVES, HEADS, CHESTS, PANTS, BOOTS]
 
 # список для хранения словарей со статистикой по генотипам (отдельный словарь для каждой стадии):
 LIST_FOR_DICTS_GENOTYPES = [{}] * MAX_STAGES
+
+# словарь для хранения перечня всех появившихся разновидностей генотипов:
+DICT_UNIQUE_GENOTYPES = {}
 
 # словарь для хранения статистики по дням:
 DICT_DAYS = {}
@@ -947,6 +955,9 @@ if __name__ == '__main__':
 
     # нарисовать линейный график о динамике общей численности когда-либо живших разбойников:
     stats.draw_and_put_line_chart_to_file(DICT_DAYS, 0, 'родившихся всего', 'дни', 'разбойников', 'charts/chart_population_total.png')
+
+    # нарисовать линейный график о динамике разнообразия генотипов:
+    stats.draw_and_put_line_chart_to_file(DICT_DAYS, 2, 'разнообразие генотипов', 'дни', 'уникальных генотипов', 'charts/chart_genotypes_variety.png')
 
     # создать общий HTML для изучения сессии:
     stats.create_index_html()
