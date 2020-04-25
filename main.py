@@ -677,13 +677,14 @@ class Stats():
                     # если генотип не существовал:
                     color = '#f0f3f4'
 
-                # но если этот генотип появился в самый первый день (изначально сгенерирован), перекрасить в особый цвет:
+                # если этот генотип появился в самый первый день (изначально сгенерирован), добавить квадратику тень:
+                add_style = ''
                 if genotype_id in LIST_FOR_DICTS_GENOTYPES[current_stage]:
                     if LIST_FOR_DICTS_GENOTYPES[current_stage][genotype_id][0] == 1:
-                        color = '#ffff80'
+                        add_style = '; box-shadow: 1px 2px 2px #000000;'
 
                 # добавить очередной квадратик-генотип в текущую строку:
-                current_row += '<span class="gen" id="' + genotype_id + '" style="background-color: ' + color + '"></span>'
+                current_row += '<span class="gen" id="' + genotype_id + '" style="background-color: ' + color + add_style + '"></span>'
 
             # когда вся строка сформирована, добавить её в код всей области:
             HTML_slide += current_row + '<br>\n'
@@ -842,10 +843,10 @@ class Stats():
 
 
 # КОНСТАНТЫ:
-ROGUES_AT_BEGIN = 100  # <-- начальное население популяции (для каждой стадии)
+ROGUES_AT_BEGIN = 50  # <-- начальное население популяции (для каждой стадии)
 MAX_STAGES = 20  # <-- сколько стадий перезагрузки популяции должно пройти
-MAX_DAYS_AT_STAGE = 50 # <-- сколько дней будет содержать одна стадия перезагрузки популяции
-SLIDING_FREQUENCY = 5 # <-- как часто нужно создавать HTML-слайды с полями генотипов (1 = раз в день, 10 = раз в 10 дней)
+MAX_DAYS_AT_STAGE = 15 # <-- сколько дней будет содержать одна стадия перезагрузки популяции
+SLIDING_FREQUENCY = 1 # <-- как часто нужно создавать HTML-слайды с полями генотипов (1 = раз в день, 10 = раз в 10 дней)
 
 # список ссылок на словари экипировки:
 LINKS_TO_EQUIP_DICTS = [RIGHT_HANDS, LEFT_HANDS, GLOVES, HEADS, CHESTS, PANTS, BOOTS]
