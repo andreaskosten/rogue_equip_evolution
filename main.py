@@ -14,10 +14,10 @@ from operations_with_files import *
 from charts_functions import *
 
 # импортировать необходимый набор словарей с экипировкой:
-#from equipment_custom import *
-#from equipment_wow_classic import *
-from equipment_obvious_strong import *
-#from equipment_obvious_weak import *
+#from evolution_equipment_custom import *
+#from evolution_equipment_wow_classic import *
+from evolution_equipment_obvious_strong import *
+#from evolution_equipment_obvious_weak import *
 
 
 
@@ -347,8 +347,8 @@ class Rogue():
 
 
     # оформить победу в дуэли:
-    def do_win(self):
-        dbg = DBG_rogue_do_win
+    def embody_win(self):
+        dbg = DBG_rogue_embody_win
 
         self.my_wins += 1
         stats.genes_add_win(self.my_genes)
@@ -371,8 +371,8 @@ class Rogue():
 
 
     # оформить поражение в дуэли:
-    def do_defeat(self):
-        dbg = DBG_rogue_do_defeat
+    def embody_defeat(self):
+        dbg = DBG_rogue_embody_defeat
 
         self.my_defeats += 1
 
@@ -469,8 +469,8 @@ class Challenger():
     """Класс обеспечивает проведение столкновений между случайными разбойниками."""
 
     # провести серию соревнований:
-    def perform_serie(self):
-        dbg = DBG_challenger_perform_serie
+    def perform_battles(self):
+        dbg = DBG_challenger_perform_battles
 
         # создать список живых разбойников:
         rogues_alive = []
@@ -494,14 +494,14 @@ class Challenger():
             a_1 = rogues_alive[pointer]
             a_2 = rogues_alive[pointer + 1]
             #print('новая пара:', a_1.name, 'и', a_2.name)
-            self.perform_one(a_1, a_2)
+            self.perform_battle(a_1, a_2)
             counter += 1
             pointer += 2
 
 
     # провести соревнование между двумя разбойниками:
-    def perform_one(self, rogue_1, rogue_2):
-        dbg = DBG_challenger_perform_one
+    def perform_battle(self, rogue_1, rogue_2):
+        dbg = DBG_challenger_perform_battle
 
         if dbg:
             print('\nновое соревнование между:', rogue_1.name, 'и', rogue_2.name)
@@ -515,11 +515,11 @@ class Challenger():
 
         # раскидать очки между победителем и проигравшим:
         if rating_1 > rating_2:
-            rogue_1.do_win()
-            rogue_2.do_defeat()
+            rogue_1.embody_win()
+            rogue_2.embody_defeat()
         elif rating_1 < rating_2:
-            rogue_1.do_defeat()
-            rogue_2.do_win()
+            rogue_1.embody_defeat()
+            rogue_2.embody_win()
         else:
             if dbg:
                 print('\tО чудо! Произошла ничья!')
@@ -871,11 +871,11 @@ DBG_rogue_generate_random_genes = False
 DBG_rogue_apply_genes = False
 DBG_rogue_calculate_rate = False
 DBG_rogue_mutate_gene = False
-DBG_rogue_do_win = False
-DBG_rogue_do_defeat = False
+DBG_rogue_embody_win = False
+DBG_rogue_embody_defeat = False
 DBG_rogue_wear_item = False
-DBG_challenger_perform_serie = False
-DBG_challenger_perform_one = False
+DBG_challenger_perform_battles = False
+DBG_challenger_perform_battle = False
 DBG_days_report = False  # <-- общий отчёт о каждом дне
 
 
@@ -922,7 +922,7 @@ if __name__ == '__main__':
                 stats.draw_genes_distribution(current_day, create_autonomous_version=False)
 
             # выполнить серию соревнований:
-            challenger.perform_serie()
+            challenger.perform_battles()
 
             if DBG_days_report:
                 print('\nДень', current_day, 'завершён.')
