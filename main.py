@@ -832,9 +832,15 @@ class Stats():
         our_html = replace('R_GENOTYPE_WINNER_BORN', str(winner_born), our_html)
         our_html = replace('R_GENOTYPE_WINNER_WINS', str(winner_wins), our_html)
 
+        # - добавить на всех слайдах золотую тень квадратику, который отвечает за этот победоносный генотип:
+        pattern_of_winner_HTML = 'id="' + winner_name + '" style="'
+        replace_to_HTML = 'id="' + winner_name + '" style="box-shadow: 2px 2px 10px #f1c40f !important; '
+        slide_distribution = replace(pattern_of_winner_HTML, replace_to_HTML, self.htmls_distribution)
+        slide_wins = replace(pattern_of_winner_HTML, replace_to_HTML, self.htmls_wins)
+
         # - слайды:
-        our_html = replace('R_SLIDES_DISTRIBUTION', self.htmls_distribution, our_html)
-        our_html = replace('R_SLIDES_WINS', self.htmls_wins, our_html)
+        our_html = replace('R_SLIDES_DISTRIBUTION', slide_distribution, our_html)
+        our_html = replace('R_SLIDES_WINS', slide_wins, our_html)
 
         # сохранить в интерактивный файл-отчёт:
         saving_status = save_data_to_file('report ' + current_time + '.html', our_html)
@@ -844,9 +850,11 @@ class Stats():
 
 # КОНСТАНТЫ:
 ROGUES_AT_BEGIN = 50  # <-- начальное население популяции (для каждой стадии)
-MAX_STAGES = 20  # <-- сколько стадий перезагрузки популяции должно пройти
+MAX_STAGES = 5  # <-- сколько стадий перезагрузки популяции должно пройти
 MAX_DAYS_AT_STAGE = 15 # <-- сколько дней будет содержать одна стадия перезагрузки популяции
 SLIDING_FREQUENCY = 1 # <-- как часто нужно создавать HTML-слайды с полями генотипов (1 = раз в день, 10 = раз в 10 дней)
+WINS_TO_REPRODUCE = 2 # <-- сколько побед разбойнику нужно одержать, чтобы размножиться
+DEFEATS_TO_DIE = 2 # <-- сколько поражений приведёт разбойника к смерти
 
 # список ссылок на словари экипировки:
 LINKS_TO_EQUIP_DICTS = [RIGHT_HANDS, LEFT_HANDS, GLOVES, HEADS, CHESTS, PANTS, BOOTS]
@@ -899,7 +907,7 @@ if __name__ == '__main__':
             stats = Stats()
 
             # создать объект популяции и наполнить его разбойниками в указанном количестве, а также указать их биологические параметры:
-            population = Population(ROGUES_AT_BEGIN, wins_to_reproduce=2, defeats_to_die=2)
+            population = Population(ROGUES_AT_BEGIN, wins_to_reproduce=WINS_TO_REPRODUCE, defeats_to_die=DEFEATS_TO_DIE)
 
             # создать объект для управления состязаниями:
             challenger = Challenger()
