@@ -23,30 +23,20 @@ from evolution_equipment_obvious_strong import *
 
 # класс Популяции
 class Population():
-    """Класс используется для удобной работы с популяцией."""
+    """Класс используется для работы с популяцией."""
 
-    # счётчик всех разбойников:
-    how_many_rogues = 0
-
-    # счётчик живых разбойников:
-    how_many_rogues_alive = 0
-
-    # счётчик битв:
-    how_many_battles = 0
-
-    # счётчик ничьих:
-    how_many_ties = 0
-
-    # счётчик поколений:
-    generations = 0
+    how_many_rogues = 0 # <-- счётчик всех разбойников
+    how_many_rogues_alive = 0 # <-- счётчик живых разбойников
+    how_many_battles = 0 # <-- счётчик битв
+    how_many_ties = 0 # <-- счётчик ничьих
+    generations = 0 # <-- счётчик поколений
+    day_of_last_changes = 0  # <-- день последних изменений в изменении численности популяции
+    max_days_without_changes = 0  # <-- счётчик дней без изменений
 
     # рекорд количества побед у одного разбойника в популяции, а также его имя и генотип:
     record_max_wins = 0
     max_winner_name = 'none'
     max_winner_genes = 'none'
-
-    # день последних изменений в изменении численности популяции:
-    day_of_last_changes = 0
 
 
     # при создании популяции сразу же наполнить её:
@@ -373,7 +363,7 @@ class Rogue():
                 new_rogue = Rogue(self.my_genes, self.my_generation, from_parent=True)
                 ROGUES_LIST.append(new_rogue)
 
-            population.day_of_last_changes = current_day
+            Population.day_of_last_changes = current_day
 
         # обновить рекорд количества побед у одного разбойника в популяции:
         if self.my_wins > Population.record_max_wins:
@@ -393,7 +383,7 @@ class Rogue():
             self.alive = False
             Population.how_many_rogues_alive -= 1
 
-            population.day_of_last_changes = current_day
+            Population.day_of_last_changes = current_day
 
             if dbg:
                 print(self.name + ' выпиливается...')
@@ -438,7 +428,7 @@ class Rogue():
                     if self.equipment_slots[1] == 1 and self.equipment_slots[0] == 1:
                         self.direct_crit_bonus += 2
                         self.calculate_critical_percent()
-                        print('Дары Лесов вместе...')
+                        #print('Дары Лесов вместе...')
 
 
     # переопределяем "магический метод" для демонстрации текущего состояния персонажа:
@@ -752,13 +742,19 @@ class Stats():
                     # если генотип не существовал:
                     color = '#f0f3f4'
 
+                # если этот генотип появился в самый первый день (изначально сгенерирован), добавить квадратику тень:
+                add_style = ''
+                if genotype_id in LIST_FOR_DICTS_GENOTYPES[current_stage]:
+                    if LIST_FOR_DICTS_GENOTYPES[current_stage][genotype_id][0] == 1:
+                        add_style = '; box-shadow: 1px 2px 2px #000000;'
+
                 # если сейчас последний день, добавить специальный класс к квадратикам генотипов:
                 add_class = ''
                 if day_num == MAX_DAYS_AT_STAGE * MAX_STAGES:
                     add_class = ' last'
 
                 # добавить очередной квадратик-генотип в текущую строку:
-                current_row += '<span class="gen' + add_class + '" id="' + genotype_id + '" style="background-color: ' + color + '"></span>'
+                current_row += '<span class="gen' + add_class + '" id="' + genotype_id + '" style="background-color: ' + color + add_style + '"></span>'
 
             # когда вся строка сформирована, добавить её в код всей области:
             HTML_slide += current_row + '<br>\n'
@@ -826,6 +822,7 @@ class Stats():
         our_html = replace('R_PPL_INITIAL_SIZE', str(ROGUES_AT_BEGIN), our_html)
         our_html = replace('R_WINS_TO_REPRODUCE', str(WINS_TO_REPRODUCE), our_html)
         our_html = replace('R_DEFEATS_TO_DIE', str(DEFEATS_TO_DIE), our_html)
+        our_html = replace('R_GSQUARE_SIDE', str(HTML_GSQUARE_SIDE), our_html)
 
         # параметр рождаемости:
         string_PBQ = ''
@@ -840,15 +837,14 @@ class Stats():
         # количество отрисованных на слайдах дней:
         our_html = replace('R_DAYS_DRAWN', str(self.days_drawn), our_html)
 
-        # счётчики:
-        our_html = replace('R_BATTLES_TOTAL', str(Population.how_many_battles), our_html)
-        our_html = replace('R_TIES_TOTAL', str(Population.how_many_ties), our_html)
+        # счётчики/данные:
         our_html = replace('R_PPL_FINAL_SIZE', str(Population.how_many_rogues_alive), our_html)
         our_html = replace('R_ROGUES_TOTAL', str(Population.how_many_rogues), our_html)
         our_html = replace('R_GNR_TOTAL', str(Population.generations), our_html)
-
-        # день, когда произошли последние изменения в численности популяции:
-        our_html = replace('R_DAY_LAST_CHANGES', str(population.day_of_last_changes), our_html)
+        our_html = replace('R_BATTLES_TOTAL', str(Population.how_many_battles), our_html)
+        our_html = replace('R_TIES_TOTAL', str(Population.how_many_ties), our_html)
+        our_html = replace('R_DWC_TOTAL', str(Population.max_days_without_changes), our_html)
+        our_html = replace('R_DAY_LAST_CHANGES', str(Population.day_of_last_changes), our_html)
 
         # подсчитать количество уникальных генотипов (со всех стадий):
         dict_for_unique_genotypes = {}
@@ -911,14 +907,16 @@ class Stats():
 
 # КОНСТАНТЫ:
 MAX_STAGES = 5  # <-- сколько стадий перезагрузки популяции должно пройти
-MAX_DAYS_AT_STAGE = 15 # <-- сколько дней будет содержать одна стадия перезагрузки популяции
+MAX_DAYS_AT_STAGE = 40 # <-- сколько дней будет содержать одна стадия перезагрузки популяции
 SLIDING_FREQUENCY = 1 # <-- как часто нужно создавать HTML-слайды с полями генотипов (1 = раз в день, 10 = раз в 10 дней)
-ROGUES_AT_BEGIN = 50  # <-- начальное население популяции (для каждой стадии)
+ROGUES_AT_BEGIN = 8  # <-- начальное население популяции (для каждой стадии)
 WINS_TO_REPRODUCE = 2 # <-- сколько побед разбойнику нужно одержать, чтобы размножиться
 DEFEATS_TO_DIE = 2 # <-- сколько поражений приведёт разбойника к смерти
-POSSIBLE_BIRTH_QUANTITIES = [1, 1] # <-- варианты количеств потомков, которые могут родиться у разбойника за раз, например:
+POSSIBLE_BIRTH_QUANTITIES = [1, 2] # <-- варианты количеств потомков, которые могут родиться у разбойника за раз, например:
 # [1, 2] означает, что с 50%-ной вероятностью родится либо 1, либо 1 потомка
 # [1, 1, 2] означает, что с 66%-ной вероятностью родится 1 потомок
+
+HTML_GSQUARE_SIDE = 16 # <-- ширина стороны квадратика, обозначающего генотип в интерактивном отчёте
 
 # список ссылок на словари экипировки:
 LINKS_TO_EQUIP_DICTS = [RIGHT_HANDS, LEFT_HANDS, GLOVES, HEADS, CHESTS, PANTS, BOOTS]
@@ -1003,6 +1001,10 @@ if __name__ == '__main__':
 
             # статистика для этого дня:
             stats.add_new_day(current_day)
+
+            # сколько дней подряд нет изменений в численности популяции:
+            if current_day - Population.day_of_last_changes > Population.max_days_without_changes:
+                Population.max_days_without_changes = current_day - Population.day_of_last_changes
 
             # в конце каждого SLIDING_FREQUENCY дня (а также в первый и последний) отрисовывать слайды по победам генотипов:
             if current_day % SLIDING_FREQUENCY == 0 or current_day == 1 or current_day == MAX_DAYS_AT_STAGE * MAX_STAGES:
