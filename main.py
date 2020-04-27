@@ -31,6 +31,12 @@ class Population():
     # счётчик живых разбойников:
     how_many_rogues_alive = 0
 
+    # счётчик битв:
+    how_many_battles = 0
+
+    # счётчик ничьих:
+    how_many_ties = 0
+
     # счётчик поколений:
     generations = 0
 
@@ -43,9 +49,8 @@ class Population():
     day_of_last_changes = 0
 
 
-
     # при создании популяции сразу же наполнить её:
-    def __init__(self, total, wins_to_reproduce=2, defeats_to_die=2):
+    def __init__(self, total, possible_birth_quantities, wins_to_reproduce=2, defeats_to_die=2):
 
         # запомнить начальное значение:
         self.initial_size = total
@@ -53,6 +58,7 @@ class Population():
         # сохранить биологические параметры, которые будут справедливы для каждого разбойника в популяции:
         self.wins_to_reproduce = wins_to_reproduce
         self.defeats_to_die = defeats_to_die
+        self.possible_birth_quantities = possible_birth_quantities
 
         while total > 0:
 
@@ -68,12 +74,12 @@ class Population():
     # вывести актуальную информацию о популяции:
     def __str__(self):
         text = 'Популяция:\n'
-        text += 'поколений: ' + str(self.generations) + '\n'
-        text += 'всего субъектов: ' + str(self.how_many_rogues) + '\n'
-        text += 'живых субъектов: ' + str(Population.how_many_rogues_alive) + '\n'
-        text += 'рекорд побед: ' + str(self.record_max_wins) + '\n'
-        text += 'имя рекордсмена: ' + str(self.max_winner_name) + '\n'
-        text += 'генотип рекордсмена: ' + str(self.max_winner_genes) + '\n'
+        text += 'поколений: ' + str(Population.generations) + '\n'
+        text += 'всего агентов: ' + str(Population.how_many_rogues) + '\n'
+        text += 'живых агентов: ' + str(Population.how_many_rogues_alive) + '\n'
+        text += 'рекорд побед: ' + str(Population.record_max_wins) + '\n'
+        text += 'имя рекордсмена: ' + str(Population.max_winner_name) + '\n'
+        text += 'генотип рекордсмена: ' + str(Population.max_winner_genes) + '\n'
         return text
 
 
@@ -355,11 +361,17 @@ class Rogue():
 
         # после каждой второй победы:
         if self.my_wins % population.wins_to_reproduce == 0:
-            # родить разбойника-потомка:
+
+            # определить число рождаемых потомков:
+            total_borns = choice(population.possible_birth_quantities)
             if dbg:
-                print(self.name + ' рожает потомка...')
-            new_rogue = Rogue(self.my_genes, self.my_generation, from_parent=True)
-            ROGUES_LIST.append(new_rogue)
+                print('рождений будет ' + str(total_borns))
+            for x in range(0, total_borns):
+                # родить разбойника-потомка:
+                if dbg:
+                    print(self.name + ' рожает потомка...')
+                new_rogue = Rogue(self.my_genes, self.my_generation, from_parent=True)
+                ROGUES_LIST.append(new_rogue)
 
             population.day_of_last_changes = current_day
 
@@ -510,6 +522,9 @@ class Challenger():
         rating_1 = rogue_1.calculate_rate()
         rating_2 = rogue_2.calculate_rate()
 
+        # счётчик битв:
+        Population.how_many_battles += 1
+
         if dbg:
             print('\tих рейтинг:', rating_1, 'и', rating_2, 'соответственно.')
 
@@ -521,6 +536,7 @@ class Challenger():
             rogue_1.embody_defeat()
             rogue_2.embody_win()
         else:
+            Population.how_many_ties += 1
             if dbg:
                 print('\tО чудо! Произошла ничья!')
 
@@ -639,7 +655,9 @@ class Stats():
     # метод - добавить данные по дню:
     def add_new_day(self, day_number):
         global DICT_DAYS
-        DICT_DAYS.setdefault(day_number, (Population.how_many_rogues, Population.how_many_rogues_alive, len(DICT_UNIQUE_GENOTYPES)))
+        # индексы кортежа:
+        # 0 - сколько разбойников всего; 1 - сколько живых; 2 - сколько уникальных генотипов; 3 - сколько ничьих
+        DICT_DAYS.setdefault(day_number, (Population.how_many_rogues, Population.how_many_rogues_alive, len(DICT_UNIQUE_GENOTYPES), Population.how_many_ties))
 
 
     # метод - превратить словарь в список кортежей, упорядочить список по указанному элементу, вернуть:
@@ -683,8 +701,13 @@ class Stats():
                     if LIST_FOR_DICTS_GENOTYPES[current_stage][genotype_id][0] == 1:
                         add_style = '; box-shadow: 1px 2px 2px #000000;'
 
+                # если сейчас последний день, добавить специальный класс к квадратикам генотипов:
+                add_class = ''
+                if day_num == MAX_DAYS_AT_STAGE * MAX_STAGES:
+                    add_class = ' last'
+
                 # добавить очередной квадратик-генотип в текущую строку:
-                current_row += '<span class="gen" id="' + genotype_id + '" style="background-color: ' + color + add_style + '"></span>'
+                current_row += '<span class="gen' + add_class + '" id="' + genotype_id + '" style="background-color: ' + color + add_style + '"></span>'
 
             # когда вся строка сформирована, добавить её в код всей области:
             HTML_slide += current_row + '<br>\n'
@@ -729,8 +752,13 @@ class Stats():
                     # если генотип не существовал:
                     color = '#f0f3f4'
 
+                # если сейчас последний день, добавить специальный класс к квадратикам генотипов:
+                add_class = ''
+                if day_num == MAX_DAYS_AT_STAGE * MAX_STAGES:
+                    add_class = ' last'
+
                 # добавить очередной квадратик-генотип в текущую строку:
-                current_row += '<span class="gen" id="' + genotype_id + '" style="background-color: ' + color + '"></span>'
+                current_row += '<span class="gen' + add_class + '" id="' + genotype_id + '" style="background-color: ' + color + '"></span>'
 
             # когда вся строка сформирована, добавить её в код всей области:
             HTML_slide += current_row + '<br>\n'
@@ -786,59 +814,92 @@ class Stats():
         # время запуска:
         current_time = datetime.strftime(datetime.now(), '%Y-%m-%d_%H-%M-%S')
 
-        # заменить в нужных точках метки на данные:
-        # - время запуска:
+        # ЗАМЕНИТЬ в нужных точках метки на данные:
+        # время запуска:
         our_html = replace('R_LAUNCH_TIME', current_time, our_html)
 
-        # - количество прошедших стадий, дней в стадии и дней всего:
+        # константы:
         our_html = replace('R_STAGES_TOTAL', str(MAX_STAGES), our_html)
         our_html = replace('R_DAYS_IN_STAGE', str(MAX_DAYS_AT_STAGE), our_html)
         our_html = replace('R_DAYS_TOTAL', str(MAX_DAYS_AT_STAGE * MAX_STAGES), our_html)
+        our_html = replace('R_SLIDING_FREQUENCY', str(SLIDING_FREQUENCY), our_html)
+        our_html = replace('R_PPL_INITIAL_SIZE', str(ROGUES_AT_BEGIN), our_html)
+        our_html = replace('R_WINS_TO_REPRODUCE', str(WINS_TO_REPRODUCE), our_html)
+        our_html = replace('R_DEFEATS_TO_DIE', str(DEFEATS_TO_DIE), our_html)
 
-        # - количество отрисованных на слайдах дней:
+        # параметр рождаемости:
+        string_PBQ = ''
+        for x in range(0, len(POSSIBLE_BIRTH_QUANTITIES)):
+            if x != len(POSSIBLE_BIRTH_QUANTITIES) - 1:
+                string_PBQ += str(POSSIBLE_BIRTH_QUANTITIES[x]) + ', '
+            else:
+                string_PBQ += str(POSSIBLE_BIRTH_QUANTITIES[x])
+        string_PBQ = '[' + string_PBQ + ']'
+        our_html = replace('R_POSSIBLE_BIRTH_QUANTITIES', string_PBQ, our_html)
+
+        # количество отрисованных на слайдах дней:
         our_html = replace('R_DAYS_DRAWN', str(self.days_drawn), our_html)
 
-        # - день, когда произошли последние изменения в численности популяции:
+        # счётчики:
+        our_html = replace('R_BATTLES_TOTAL', str(Population.how_many_battles), our_html)
+        our_html = replace('R_TIES_TOTAL', str(Population.how_many_ties), our_html)
+        our_html = replace('R_PPL_FINAL_SIZE', str(Population.how_many_rogues_alive), our_html)
+        our_html = replace('R_ROGUES_TOTAL', str(Population.how_many_rogues), our_html)
+        our_html = replace('R_GNR_TOTAL', str(Population.generations), our_html)
+
+        # день, когда произошли последние изменения в численности популяции:
         our_html = replace('R_DAY_LAST_CHANGES', str(population.day_of_last_changes), our_html)
 
-        # - начальный и конечный размеры популяции:
-        our_html = replace('R_PPL_INITIAL_SIZE', str(population.initial_size), our_html)
-        our_html = replace('R_PPL_FINAL_SIZE', str(Population.how_many_rogues_alive), our_html)
-
-        # - сколько всего разбойников появилось на свет:
-        our_html = replace('R_ROGUES_TOTAL', str(Population.how_many_rogues), our_html)
-
-        # сколько поколений образовалось:
-        our_html = replace('R_GNR_TOTAL', str(population.generations), our_html)
-
-        # - подсчитать количество уникальных генотипов (со всех стадий):
+        # подсчитать количество уникальных генотипов (со всех стадий):
         dict_for_unique_genotypes = {}
         for current_dict in range( 0, len(LIST_FOR_DICTS_GENOTYPES) ):
             for current_genotype in LIST_FOR_DICTS_GENOTYPES[current_dict]:
                 dict_for_unique_genotypes.setdefault(current_genotype, 0)
 
-        # - длина этого словаря и есть количество уникальных генотипов за все стадии:
+        # длина этого словаря и есть количество уникальных генотипов за все стадии:
         our_html = replace('R_UNIQUE_GENOTYPES', str(len(dict_for_unique_genotypes)), our_html)
 
-        # - потенциальный максимум возможных генотипов:
+        # потенциальный максимум возможных генотипов:
         our_html = replace('R_POSSIBLE_GENOTYPES', str(self.genotypes_total), our_html)
 
-        # - информация о самом победоносном генотипе на последней стадии:
+        # охват генофонда:
+        genotypes_percent = round(len(dict_for_unique_genotypes) / self.genotypes_total * 100, 2)
+        our_html = replace('R_GENOTYPES_PERCENT', str(genotypes_percent) + ' %', our_html)
+
+        # получить список генотипов, отсортированный в порядке спадания количества побед:
         list_genotypes_top = stats.get_ordered_list_from_dict(LIST_FOR_DICTS_GENOTYPES[current_stage], inner_index=2)
+
+        # первое место:
         winner_name = list_genotypes_top[0][0]
         winner_born = list_genotypes_top[0][1][0]
         winner_wins = list_genotypes_top[0][1][2]
-        our_html = replace('R_GENOTYPE_WINNER_NAME', winner_name, our_html)
-        our_html = replace('R_GENOTYPE_WINNER_BORN', str(winner_born), our_html)
-        our_html = replace('R_GENOTYPE_WINNER_WINS', str(winner_wins), our_html)
+        our_html = replace('R_WINNER_1_NAME', winner_name, our_html)
+        our_html = replace('R_WINNER_1_BORN', str(winner_born), our_html)
+        our_html = replace('R_WINNER_1_WINS', str(winner_wins), our_html)
 
-        # - добавить на всех слайдах золотую тень квадратику, который отвечает за этот победоносный генотип:
-        pattern_of_winner_HTML = 'id="' + winner_name + '" style="'
-        replace_to_HTML = 'id="' + winner_name + '" style="box-shadow: 2px 2px 10px #f1c40f !important; '
+        # второе место:
+        winner_name = list_genotypes_top[1][0]
+        winner_born = list_genotypes_top[1][1][0]
+        winner_wins = list_genotypes_top[1][1][2]
+        our_html = replace('R_WINNER_2_NAME', winner_name, our_html)
+        our_html = replace('R_WINNER_2_BORN', str(winner_born), our_html)
+        our_html = replace('R_WINNER_2_WINS', str(winner_wins), our_html)
+
+        # третье место:
+        winner_name = list_genotypes_top[2][0]
+        winner_born = list_genotypes_top[2][1][0]
+        winner_wins = list_genotypes_top[2][1][2]
+        our_html = replace('R_WINNER_3_NAME', winner_name, our_html)
+        our_html = replace('R_WINNER_3_BORN', str(winner_born), our_html)
+        our_html = replace('R_WINNER_3_WINS', str(winner_wins), our_html)
+
+        # добавить на слайдах последнего дня золотую тень квадратику, который отвечает за генотип №1:
+        pattern_of_winner_HTML = 'last" id="' + list_genotypes_top[0][0] + '" style="'
+        replace_to_HTML = 'last" id="' + list_genotypes_top[0][0] + '" style="box-shadow: 2px 2px 10px #f1c40f !important; '
         slide_distribution = replace(pattern_of_winner_HTML, replace_to_HTML, self.htmls_distribution)
         slide_wins = replace(pattern_of_winner_HTML, replace_to_HTML, self.htmls_wins)
 
-        # - слайды:
+        # слайды:
         our_html = replace('R_SLIDES_DISTRIBUTION', slide_distribution, our_html)
         our_html = replace('R_SLIDES_WINS', slide_wins, our_html)
 
@@ -849,12 +910,15 @@ class Stats():
 
 
 # КОНСТАНТЫ:
-ROGUES_AT_BEGIN = 50  # <-- начальное население популяции (для каждой стадии)
 MAX_STAGES = 5  # <-- сколько стадий перезагрузки популяции должно пройти
 MAX_DAYS_AT_STAGE = 15 # <-- сколько дней будет содержать одна стадия перезагрузки популяции
 SLIDING_FREQUENCY = 1 # <-- как часто нужно создавать HTML-слайды с полями генотипов (1 = раз в день, 10 = раз в 10 дней)
+ROGUES_AT_BEGIN = 50  # <-- начальное население популяции (для каждой стадии)
 WINS_TO_REPRODUCE = 2 # <-- сколько побед разбойнику нужно одержать, чтобы размножиться
 DEFEATS_TO_DIE = 2 # <-- сколько поражений приведёт разбойника к смерти
+POSSIBLE_BIRTH_QUANTITIES = [1, 1] # <-- варианты количеств потомков, которые могут родиться у разбойника за раз, например:
+# [1, 2] означает, что с 50%-ной вероятностью родится либо 1, либо 1 потомка
+# [1, 1, 2] означает, что с 66%-ной вероятностью родится 1 потомок
 
 # список ссылок на словари экипировки:
 LINKS_TO_EQUIP_DICTS = [RIGHT_HANDS, LEFT_HANDS, GLOVES, HEADS, CHESTS, PANTS, BOOTS]
@@ -907,7 +971,7 @@ if __name__ == '__main__':
             stats = Stats()
 
             # создать объект популяции и наполнить его разбойниками в указанном количестве, а также указать их биологические параметры:
-            population = Population(ROGUES_AT_BEGIN, wins_to_reproduce=WINS_TO_REPRODUCE, defeats_to_die=DEFEATS_TO_DIE)
+            population = Population(ROGUES_AT_BEGIN, POSSIBLE_BIRTH_QUANTITIES, wins_to_reproduce=WINS_TO_REPRODUCE, defeats_to_die=DEFEATS_TO_DIE)
 
             # создать объект для управления состязаниями:
             challenger = Challenger()
@@ -946,8 +1010,9 @@ if __name__ == '__main__':
 
             current_day += 1
 
-        # когда стадия подходит к концу, перезагрузить популяцию, оставив в ней указанное кол-во лучших генотипов:
-        population.reload(ROGUES_AT_BEGIN)
+        # когда НЕпоследняя стадия подходит к концу, перезагрузить популяцию, оставив в ней указанное кол-во лучших генотипов:
+        if current_stage < MAX_STAGES - 1:
+            population.reload(ROGUES_AT_BEGIN)
 
         current_stage += 1
 
@@ -959,14 +1024,17 @@ if __name__ == '__main__':
     print('\nДНИ:')
     print(DICT_DAYS)
 
-    # нарисовать линейный график о динамике одновременно живущих разбойников:
+    # нарисовать график о динамике одновременно живущих разбойников:
     stats.draw_and_put_line_chart_to_file(DICT_DAYS, 1, 'живое население', 'дни', 'разбойников', 'charts/chart_population_demography.png')
 
-    # нарисовать линейный график о динамике общей численности когда-либо живших разбойников:
+    # нарисовать график о динамике общей численности когда-либо живших разбойников:
     stats.draw_and_put_line_chart_to_file(DICT_DAYS, 0, 'родившихся всего', 'дни', 'разбойников', 'charts/chart_population_total.png')
 
-    # нарисовать линейный график о динамике разнообразия генотипов:
+    # нарисовать график о динамике разнообразия генотипов:
     stats.draw_and_put_line_chart_to_file(DICT_DAYS, 2, 'разнообразие генотипов', 'дни', 'уникальных генотипов', 'charts/chart_genotypes_variety.png')
+
+    # нарисовать график о динамике ничьих (= столкновение одинаковых генотипов):
+    stats.draw_and_put_line_chart_to_file(DICT_DAYS, 3, 'динамика ничьих', 'дни', 'ничьих', 'charts/chart_genotypes_ties.png')
 
     # создать общий HTML для изучения сессии:
     stats.create_index_html()
