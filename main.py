@@ -912,7 +912,7 @@ SLIDING_FREQUENCY = 1 # <-- как часто нужно создавать HTML
 ROGUES_AT_BEGIN = 8  # <-- начальное население популяции (для каждой стадии)
 WINS_TO_REPRODUCE = 2 # <-- сколько побед разбойнику нужно одержать, чтобы размножиться
 DEFEATS_TO_DIE = 2 # <-- сколько поражений приведёт разбойника к смерти
-POSSIBLE_BIRTH_QUANTITIES = [1, 2] # <-- варианты количеств потомков, которые могут родиться у разбойника за раз, например:
+POSSIBLE_BIRTH_QUANTITIES = [1] # <-- варианты количеств потомков, которые могут родиться у разбойника за раз, например:
 # [1, 2] означает, что с 50%-ной вероятностью родится либо 1, либо 1 потомка
 # [1, 1, 2] означает, что с 66%-ной вероятностью родится 1 потомок
 
@@ -988,10 +988,6 @@ if __name__ == '__main__':
             if DBG_days_report:
                 print('\n\nДЕНЬ/DAY', current_day)
 
-            # в начале каждого SLIDING_FREQUENCY дня (а также в первый и последний) отрисовывать слайды по распространённости генотипов:
-            if current_day % SLIDING_FREQUENCY == 0 or current_day == 1 or current_day == MAX_DAYS_AT_STAGE * MAX_STAGES:
-                stats.draw_genes_distribution(current_day, create_autonomous_version=False)
-
             # выполнить серию соревнований:
             challenger.perform_battles()
 
@@ -1005,6 +1001,10 @@ if __name__ == '__main__':
             # сколько дней подряд нет изменений в численности популяции:
             if current_day - Population.day_of_last_changes > Population.max_days_without_changes:
                 Population.max_days_without_changes = current_day - Population.day_of_last_changes
+
+            # в конце каждого SLIDING_FREQUENCY дня (а также в первый и последний) отрисовывать слайды по распространённости генотипов:
+            if current_day % SLIDING_FREQUENCY == 0 or current_day == 1 or current_day == MAX_DAYS_AT_STAGE * MAX_STAGES:
+                stats.draw_genes_distribution(current_day, create_autonomous_version=False)
 
             # в конце каждого SLIDING_FREQUENCY дня (а также в первый и последний) отрисовывать слайды по победам генотипов:
             if current_day % SLIDING_FREQUENCY == 0 or current_day == 1 or current_day == MAX_DAYS_AT_STAGE * MAX_STAGES:
