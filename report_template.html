@@ -36,6 +36,10 @@ p {
     font-family: 'Calibri';
 }
 
+.td_padding {
+	padding-top: 16px;
+}
+
 .right_p {
     padding-right: 24px;
 }
@@ -212,8 +216,18 @@ p {
 		<div style='margin-right: 32px'>
 			<table class='report_table'>
 				<tr><td class='right_p'>время запуска:</td><td><span class='text_values'>R_LAUNCH_TIME</span></td></tr>
-				<tr><td class='right_p'>стадий * дней в стадии = дней:</td><td><span class='text_values' id='R_STAGES_TOTAL'>R_STAGES_TOTAL</span> * <span class='text_values'>R_DAYS_IN_STAGE</span> = <span class='text_values' id='text_DAYS_TOTAL'>R_DAYS_TOTAL</span></td></tr>
-				<tr><td class='right_p'>начальный размер популяции:</td><td><span class='text_values'>R_PPL_INITIAL_SIZE</span></td></tr>
+				
+				<tr><td class='right_p td_padding'><b>СТАРТОВЫЕ ПАРАМЕТРЫ (КОНСТАНТЫ)</b></td><td></td></tr>
+				<tr><td class='right_p'>MAX_STAGES * MAX_DAYS_AT_STAGE = всего дней</td><td><span class='text_values' id='R_STAGES_TOTAL'>R_STAGES_TOTAL</span> * <span class='text_values'>R_DAYS_IN_STAGE</span> = <span class='text_values' id='text_DAYS_TOTAL'>R_DAYS_TOTAL</span></td></tr>
+				<tr><td class='right_p'>SLIDING_FREQUENCY</td><td><span class='text_values'>R_SLIDING_FREQUENCY</span></td></tr>
+				<tr><td class='right_p'>ROGUES_AT_BEGIN</td><td><span class='text_values'>R_PPL_INITIAL_SIZE</span></td></tr>
+				<tr><td class='right_p'>WINS_TO_REPRODUCE</td><td><span class='text_values'>R_WINS_TO_REPRODUCE</span></td></tr>
+				<tr><td class='right_p'>DEFEATS_TO_DIE</td><td><span class='text_values'>R_DEFEATS_TO_DIE</span></td></tr>
+				<tr><td class='right_p'>POSSIBLE_BIRTH_QUANTITIES</td><td><span class='text_values'>R_POSSIBLE_BIRTH_QUANTITIES</span></td></tr>
+				
+				<tr><td class='right_p td_padding'><b>данные, которые образовались в процессе:</b></td><td></td></tr>
+				<tr><td class='right_p'>битв проведено:</td><td><span class='text_values'>R_BATTLES_TOTAL</span></td></tr>
+				<tr><td class='right_p'>ничьих:</td><td><span class='text_values'>R_TIES_TOTAL</span></td></tr>
 				<tr><td class='right_p'>конечный размер популяции:</td><td><span class='text_values'>R_PPL_FINAL_SIZE</span></td></tr>
 				<tr><td class='right_p'>разбойников всего:</td><td><span class='text_values'>R_ROGUES_TOTAL</span></td></tr>
 				<tr><td class='right_p'>поколений всего:</td><td><span class='text_values'>R_GNR_TOTAL</span></td></tr>
@@ -224,10 +238,20 @@ p {
 		
 		<div>
 			<table class='report_table'>
-				<tr><td class='right_p'>уникальных/возможных генотипов:</td><td><span class='text_values'><b>R_UNIQUE_GENOTYPES</b> / R_POSSIBLE_GENOTYPES</span></td></tr>
-				<tr><td class='right_p'>генотип-победитель:</td><td><span class='text_values'>R_GENOTYPE_WINNER_NAME</span></td></tr>
-				<tr><td class='right_p'>побед у этого гена:</td><td><span class='text_values'>R_GENOTYPE_WINNER_WINS</span></td></tr>
-				<tr><td class='right_p'>появился в поколении:</td><td><span class='text_values'>R_GENOTYPE_WINNER_BORN</span></td></tr>
+				<tr><td class='right_p'>уникальных/возможных генотипов:</td><td><span class='text_values'>R_UNIQUE_GENOTYPES / R_POSSIBLE_GENOTYPES</span></td></tr>
+				<tr><td class='right_p'>охват генофонда:</td><td><span class='text_values'>R_GENOTYPES_PERCENT</span></td></tr>
+				
+				<tr><td class='right_p td_padding'>1-е место:</td><td class='td_padding'><span class='text_values'>R_WINNER_1_NAME</span></td></tr>
+				<tr><td class='right_p'>побед у этого гена:</td><td><span class='text_values'>R_WINNER_1_WINS</span></td></tr>
+				<tr><td class='right_p'>появился в поколении:</td><td><span class='text_values'>R_WINNER_1_BORN</span></td></tr>
+				
+				<tr><td class='right_p td_padding'>2-е место:</td><td class='td_padding'><span class='text_values'>R_WINNER_2_NAME</span></td></tr>
+				<tr><td class='right_p'>побед у этого гена:</td><td><span class='text_values'>R_WINNER_2_WINS</span></td></tr>
+				<tr><td class='right_p'>появился в поколении:</td><td><span class='text_values'>R_WINNER_2_BORN</span></td></tr>
+				
+				<tr><td class='right_p td_padding'>3-е место:</td><td class='td_padding'><span class='text_values'>R_WINNER_3_NAME</span></td></tr>
+				<tr><td class='right_p'>побед у этого гена:</td><td><span class='text_values'>R_WINNER_3_WINS</span></td></tr>
+				<tr><td class='right_p'>появился в поколении:</td><td><span class='text_values'>R_WINNER_3_BORN</span></td></tr>
 			</table>
 		</div>
     </div>
@@ -285,7 +309,7 @@ p {
 					
 					<div>
 						<div class='flex_RLC'>
-							<span class='gen_legend gen_legend_one' style='background-color: #ffff80'></span>
+							<span class='gen_legend gen_legend_one' style='background-color: #a5f3e3; box-shadow: 1px 2px 2px #000000;'></span>
 							<p class='text_legend' nowrap>изначальный</p>
 						</div>
 						<div class='flex_RLC'>
@@ -349,16 +373,22 @@ p {
 		</div>
 		
 		<div style='display: flex; flex-direction: row; justify-content: center; align-items: flex-start' align='center'>
-			<div style='margin: 20px 0px 00px 0px' align='center'>
+			<div style='margin: 20px 0px 20px 0px' align='center'>
 				<img src='charts/chart_population_demography.png'>
 			</div>
 			
-			<div style='margin: 20px 0px 00px 0px' align='center'>
+			<div style='margin: 20px 0px 20px 0px' align='center'>
 				<img src='charts/chart_population_total.png'>
 			</div>
-			
-			<div style='margin: 20px 0px 00px 0px' align='center'>
+		</div>
+		
+		<div style='display: flex; flex-direction: row; justify-content: center; align-items: flex-start' align='center'>
+			<div style='margin: 20px 0px 20px 0px' align='center'>
 				<img src='charts/chart_genotypes_variety.png'>
+			</div>
+			
+			<div style='margin: 20px 0px 20px 0px' align='center'>
+				<img src='charts/chart_genotypes_ties.png'>
 			</div>
 		</div>
 	</div>
