@@ -14,10 +14,10 @@ from operations_with_files import *
 from charts_functions import *
 
 # импортировать необходимый набор словарей с экипировкой:
-#from evolution_equipment_custom import *
+from evolution_equipment_custom import *
 #from evolution_equipment_wow_classic import *
-from evolution_equipment_obvious_strong import *
-#from evolution_equipment_obvious_weak import *
+#from evolution_equipment_obvious_strong import *
+#from evolution_equipment_extended import *
 
 
 
@@ -823,6 +823,7 @@ class Stats():
         our_html = replace('R_WINS_TO_REPRODUCE', str(WINS_TO_REPRODUCE), our_html)
         our_html = replace('R_DEFEATS_TO_DIE', str(DEFEATS_TO_DIE), our_html)
         our_html = replace('R_GSQUARE_SIDE', str(HTML_GSQUARE_SIDE), our_html)
+        our_html = replace('R_GSQUARE_MARGIN', str(HTML_GSQUARE_MARGIN), our_html)
 
         # параметр рождаемости:
         string_PBQ = ''
@@ -906,17 +907,18 @@ class Stats():
 
 
 # КОНСТАНТЫ:
-MAX_STAGES = 5  # <-- сколько стадий перезагрузки популяции должно пройти
-MAX_DAYS_AT_STAGE = 40 # <-- сколько дней будет содержать одна стадия перезагрузки популяции
-SLIDING_FREQUENCY = 1 # <-- как часто нужно создавать HTML-слайды с полями генотипов (1 = раз в день, 10 = раз в 10 дней)
-ROGUES_AT_BEGIN = 8  # <-- начальное население популяции (для каждой стадии)
+MAX_STAGES = 8 # <-- сколько стадий перезагрузки популяции должно пройти
+MAX_DAYS_AT_STAGE = 20 # <-- сколько дней будет содержать одна стадия перезагрузки популяции
+SLIDING_FREQUENCY = 10 # <-- как часто нужно создавать HTML-слайды с полями генотипов (1 = раз в день, 10 = раз в 10 дней)
+ROGUES_AT_BEGIN = 10 # <-- начальное население популяции (для каждой стадии)
 WINS_TO_REPRODUCE = 2 # <-- сколько побед разбойнику нужно одержать, чтобы размножиться
 DEFEATS_TO_DIE = 2 # <-- сколько поражений приведёт разбойника к смерти
 POSSIBLE_BIRTH_QUANTITIES = [1] # <-- варианты количеств потомков, которые могут родиться у разбойника за раз, например:
 # [1, 2] означает, что с 50%-ной вероятностью родится либо 1, либо 1 потомка
 # [1, 1, 2] означает, что с 66%-ной вероятностью родится 1 потомок
 
-HTML_GSQUARE_SIDE = 16 # <-- ширина стороны квадратика, обозначающего генотип в интерактивном отчёте
+HTML_GSQUARE_SIDE = 10 # <-- ширина стороны квадратика, обозначающего генотип в интерактивном отчёте
+HTML_GSQUARE_MARGIN = 3 # <-- отступы между квадратиками, обозначающими генотип в интерактивном отчёте
 
 # список ссылок на словари экипировки:
 LINKS_TO_EQUIP_DICTS = [RIGHT_HANDS, LEFT_HANDS, GLOVES, HEADS, CHESTS, PANTS, BOOTS]
