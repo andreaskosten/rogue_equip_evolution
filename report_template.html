@@ -123,6 +123,7 @@ p {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+	flex-wrap: nowrap;
 }
 
 .g_cont_w {
@@ -132,6 +133,7 @@ p {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+	flex-wrap: nowrap;
 }
 
 .gen_f {
@@ -141,8 +143,8 @@ p {
 .gen {
     display: inline-block;
     margin: 3px;
-    width: 10px;
-    height: 10px;
+    width: R_GSQUARE_SIDEpx;
+    height: R_GSQUARE_SIDEpx;
 }.gen:hover { filter: brightness(1.2); }
 
 .gen_legend {
@@ -213,26 +215,26 @@ p {
 	
     <div id='panel_main' style='margin: 20px 12px 20px 12px; display: flex; flex-direction: row; justify-content: flex-start; align-items: flex-start'>
 		
-		<div style='margin-right: 32px'>
+		<div style='margin-right: 48px'>
 			<table class='report_table'>
-				<tr><td class='right_p'>время запуска:</td><td><span class='text_values'>R_LAUNCH_TIME</span></td></tr>
+				<!-- <tr><td class='right_p'>время запуска:</td><td><span class='text_values'>R_LAUNCH_TIME</span></td></tr> -->
 				
-				<tr><td class='right_p td_padding'><b>СТАРТОВЫЕ ПАРАМЕТРЫ (КОНСТАНТЫ)</b></td><td></td></tr>
-				<tr><td class='right_p'>MAX_STAGES * MAX_DAYS_AT_STAGE = всего дней</td><td><span class='text_values' id='R_STAGES_TOTAL'>R_STAGES_TOTAL</span> * <span class='text_values'>R_DAYS_IN_STAGE</span> = <span class='text_values' id='text_DAYS_TOTAL'>R_DAYS_TOTAL</span></td></tr>
+				<tr><td class='right_p'><b>СТАРТОВЫЕ ПАРАМЕТРЫ (КОНСТАНТЫ)</b></td><td></td></tr>
+				<tr><td class='right_p'>MAX_STAGES * MAX_DAYS_AT_STAGE</td><td><span class='text_values' id='R_STAGES_TOTAL'>R_STAGES_TOTAL</span> * <span class='text_values'>R_DAYS_IN_STAGE</span> = <span class='text_values' id='text_DAYS_TOTAL'>R_DAYS_TOTAL</span></td></tr>
 				<tr><td class='right_p'>SLIDING_FREQUENCY</td><td><span class='text_values'>R_SLIDING_FREQUENCY</span></td></tr>
 				<tr><td class='right_p'>ROGUES_AT_BEGIN</td><td><span class='text_values'>R_PPL_INITIAL_SIZE</span></td></tr>
 				<tr><td class='right_p'>WINS_TO_REPRODUCE</td><td><span class='text_values'>R_WINS_TO_REPRODUCE</span></td></tr>
 				<tr><td class='right_p'>DEFEATS_TO_DIE</td><td><span class='text_values'>R_DEFEATS_TO_DIE</span></td></tr>
 				<tr><td class='right_p'>POSSIBLE_BIRTH_QUANTITIES</td><td><span class='text_values'>R_POSSIBLE_BIRTH_QUANTITIES</span></td></tr>
 				
-				<tr><td class='right_p td_padding'><b>данные, которые образовались в процессе:</b></td><td></td></tr>
-				<tr><td class='right_p'>битв проведено:</td><td><span class='text_values'>R_BATTLES_TOTAL</span></td></tr>
-				<tr><td class='right_p'>ничьих:</td><td><span class='text_values'>R_TIES_TOTAL</span></td></tr>
+				<tr><td class='right_p td_padding'><b>полученные данные:</b></td><td></td></tr>
 				<tr><td class='right_p'>конечный размер популяции:</td><td><span class='text_values'>R_PPL_FINAL_SIZE</span></td></tr>
 				<tr><td class='right_p'>разбойников всего:</td><td><span class='text_values'>R_ROGUES_TOTAL</span></td></tr>
 				<tr><td class='right_p'>поколений всего:</td><td><span class='text_values'>R_GNR_TOTAL</span></td></tr>
+				<tr><td class='right_p'>битв проведено:</td><td><span class='text_values'>R_BATTLES_TOTAL</span></td></tr>
+				<tr><td class='right_p'>ничьих:</td><td><span class='text_values'>R_TIES_TOTAL</span></td></tr>
+				<tr><td class='right_p'>макс. период застоя:</td><td><span class='text_values'>R_DWC_TOTAL</span></td></tr>
 				<tr><td class='right_p'>день последних изменений:</td><td><span class='text_values'>R_DAY_LAST_CHANGES</span></td></tr>
-				<!-- <tr><td></td><td></td></tr> -->
 			</table>
 		</div>
 		
