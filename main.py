@@ -1,6 +1,6 @@
 # для работы со временем:
 from datetime import datetime
-from time import time, sleep
+from time import time
 
 # для некоторых операций:
 from random import randrange, randint, choice, shuffle
@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 
 # импортировать другие файлы проекта:
 from operations_with_files import *
-from charts_functions import *
 
 # импортировать необходимый набор словарей с экипировкой:
 from evolution_equipment_custom import *
@@ -40,7 +39,7 @@ class Population():
 
 
     # при создании популяции сразу же наполнить её:
-    def __init__(self, total, possible_birth_quantities, wins_to_reproduce=2, defeats_to_die=2):
+    def __init__(self, total, possible_birth_quantities, wins_to_reproduce, defeats_to_die):
 
         # запомнить начальное значение:
         self.initial_size = total
@@ -101,7 +100,6 @@ class Population():
 
             # пополнить список разбойников:
             ROGUES_LIST.append(new_rogue)
-
 
 
 
@@ -248,7 +246,7 @@ class Rogue():
         # если мутация НЕ должна произойти, больше тут делать нечего:
         if event_mutation == 10:
             if dbg:  # для отладки:
-                print('\nf "mutate_genes" begins and ends:' + '\n\tмутация НЕ состоялась\n\told genes: ', end='')
+                print('\nf "mutate_genes" начата и окончена:' + '\n\tмутация НЕ состоялась\n\told genes: ', end='')
                 print(parent_genes)
                 print('\tnew genes: ', end='')
                 print(self.my_genes)
@@ -265,7 +263,7 @@ class Rogue():
                 mutation_iters = 3
 
             if dbg:  # для отладки:
-                print('\nf "mutate_genes" begins:' + '\n\tмутаций запланировано: ' + str(mutation_iters))
+                print('\nf "mutate_genes" начата:' + '\n\tмутаций запланировано: ' + str(mutation_iters))
 
             # список генов, доступных для мутации:
             genes_available = [0, 1, 2, 3, 4, 5, 6]
@@ -299,7 +297,7 @@ class Rogue():
                     genes_mutated_str += str(x) + ', '
             else:
                 genes_mutated_str = str(genes_mutated[0])
-            print('\nf "mutate_genes" ends:' + '\n\told genes: ', end='')
+            print('\nf "mutate_genes" окончена:' + '\n\told genes: ', end='')
             print(parent_genes)
             print('\tgenes_mutated: ' + genes_mutated_str)
             print('\tnew genes: ', end='')
@@ -338,7 +336,7 @@ class Rogue():
             pointer += 1
 
         if dbg:  # для отладки:
-            print('\nf "apply_genes":' + '\n\tapplied.')
+            print('\nf "apply_genes":' + '\n\tприменено.')
             print(self)
 
 
@@ -356,10 +354,12 @@ class Rogue():
             total_borns = choice(population.possible_birth_quantities)
             if dbg:
                 print('рождений будет ' + str(total_borns))
+
             for x in range(0, total_borns):
-                # родить разбойника-потомка:
                 if dbg:
                     print(self.name + ' рожает потомка...')
+
+                # родить разбойника-потомка:
                 new_rogue = Rogue(self.my_genes, self.my_generation, from_parent=True)
                 ROGUES_LIST.append(new_rogue)
 
@@ -382,7 +382,6 @@ class Rogue():
         if self.my_defeats == population.defeats_to_die:
             self.alive = False
             Population.how_many_rogues_alive -= 1
-
             Population.day_of_last_changes = current_day
 
             if dbg:
@@ -394,9 +393,7 @@ class Rogue():
 
         item_id += 1
 
-        if dbg:  # для отладки:
-            #print('f "wear_item":\n\titems_list:')
-            #print(items_list)
+        if dbg:
             print('\tвыбрана вещь:', items_list[item_id])
 
         # в слоте не должно быть экипировки, иначе пришлось бы снять её и отнять характеристики, которые она дала:
@@ -466,11 +463,11 @@ class Rogue():
 
 
 
-# класс Столкновений
+# класс Состязаний
 class Challenger():
-    """Класс обеспечивает проведение столкновений между случайными разбойниками."""
+    """Класс обеспечивает проведение боёв между случайными разбойниками."""
 
-    # провести серию соревнований:
+    # провести серию боёв:
     def perform_battles(self):
         dbg = DBG_challenger_perform_battles
 
@@ -495,24 +492,23 @@ class Challenger():
         while counter < pairs_total:
             a_1 = rogues_alive[pointer]
             a_2 = rogues_alive[pointer + 1]
-            #print('новая пара:', a_1.name, 'и', a_2.name)
             self.perform_battle(a_1, a_2)
             counter += 1
             pointer += 2
 
 
-    # провести соревнование между двумя разбойниками:
+    # провести бой между двумя разбойниками:
     def perform_battle(self, rogue_1, rogue_2):
         dbg = DBG_challenger_perform_battle
 
         if dbg:
-            print('\nновое соревнование между:', rogue_1.name, 'и', rogue_2.name)
+            print('\nновый бой между:', rogue_1.name, 'и', rogue_2.name)
 
         # рассчитать рейтинг каждого разбойника (в более совершенной симуляции тут может быть полноценное сражение):
         rating_1 = rogue_1.calculate_rate()
         rating_2 = rogue_2.calculate_rate()
 
-        # счётчик битв:
+        # счётчик боёв:
         Population.how_many_battles += 1
 
         if dbg:
@@ -536,14 +532,13 @@ class Challenger():
 class Stats():
     """Класс обеспечивает сбор и визуализацию статистики."""
 
-    # при инициализации нужно подготовить некоторые данные, которые затем неоднократно понадобятся:
+    # при инициализации нужно подготовить некоторые данные, которые затем понадобятся:
     def __init__(self):
 
         # подсчитать количество возможных генотипов:
         self.genotypes_total = 1
         for current_dict_for_equip in LINKS_TO_EQUIP_DICTS:
             self.genotypes_total *= len(current_dict_for_equip)
-        # print('генотипов всего:', genotypes_total)
 
         # создать список возможных генотипов:
         self.list_of_possible_genotypes = list()
@@ -564,7 +559,6 @@ class Stats():
                                 for g7 in BOOTS:
                                     current_genotype = str(g1-1)+'-'+str(g2-1)+'-'+str(g3-1)+'-'+str(g4-1)+'-'+str(g5-1)+'-'+str(g6-1)+'-'+str(g7-1)
                                     self.list_of_possible_genotypes.append(current_genotype)
-        #print(self.list_of_possible_genotypes)
 
 
         # нужно вычислить размеры прямоугольной области, максимально приближенной по размерам к квадрату, где Ширина * Длина = Сумма генотипов:
@@ -658,7 +652,7 @@ class Stats():
 
 
     # метод - отрисовать в HTML прямоугольную область, где показать "карту генотипов" с точки зрения их распространённости:
-    def draw_genes_distribution(self, day_num, create_autonomous_version=False):
+    def draw_genes_distribution(self, day_num):
 
         self.days_drawn += 1
 
@@ -705,15 +699,12 @@ class Stats():
         # закончить оформление области:
         HTML_slide = '\n\n<div class="g_cont_d d_' + str(self.days_drawn) + '"><p>день ' + str(day_num) + '</p><div class="gen_f">\n' + HTML_slide + '</div></div>\n'
 
-        # сохранить область в файл, который потом будет считываться через файл index.html:
-        #save_data_to_file(filename, HTML_slide)
-
         # сохранить область в переменную:
         self.htmls_distribution += HTML_slide
 
 
     # метод - отрисовать в HTML прямоугольную область, где показать "карту генотипов" с точки зрения их побед:
-    def draw_genes_wins(self, day_num, create_autonomous_version=False):
+    def draw_genes_wins(self, day_num):
 
         # отрисовать область, состоящую из <span>-квадратиков, где id будет равен коду генотипа:
         HTML_slide = ''
@@ -762,14 +753,11 @@ class Stats():
         # закончить оформление области:
         HTML_slide = '\n\n<div class="g_cont_w w_' + str(self.days_drawn) + '"><p>день ' + str(day_num) + '</p><div class="gen_f">\n' + HTML_slide + '</div></div>\n'
 
-        # сохранить область в файл, который потом будет считываться через файл index.html:
-        #save_data_to_file(filename, HTML_slide)
-
         # сохранить область в переменную:
         self.htmls_wins += HTML_slide
 
 
-    # метод - отрисовать график при помощи matplotlib.pyplot:
+    # метод - отрисовать график при помощи matplotlib:
     def draw_and_put_line_chart_to_file(self, DICT_DAYS, element_to_extract, chart_title, x_label, y_label, filename):
         list_x = []
         list_y = []
@@ -801,7 +789,7 @@ class Stats():
         fig.savefig(filename)
 
 
-    # метод - взять HTML-шаблон и создать интерактивный шаблон на его основе:
+    # метод - взять HTML-шаблон и создать интерактивный отчёт на его основе:
     def create_index_html(self):
 
         # считать основу с шаблона:
@@ -810,7 +798,7 @@ class Stats():
         # время запуска:
         current_time = datetime.strftime(datetime.now(), '%Y-%m-%d_%H-%M-%S')
 
-        # ЗАМЕНИТЬ в нужных точках метки на данные:
+        # ЗАМЕНИТЬ метки в нужных местах на данные:
         # время запуска:
         our_html = replace('R_LAUNCH_TIME', current_time, our_html)
 
@@ -964,7 +952,7 @@ if __name__ == '__main__':
     current_day = 1
     while current_stage < MAX_STAGES:
 
-        # на старте ПЕРВОЙ стадии:
+        # на старте первой стадии:
         if current_stage == 0:
 
             # создать объект статистики:
@@ -978,7 +966,6 @@ if __name__ == '__main__':
 
             # "прочитать" популяцию:
             print(population)
-
 
         # высчитать новый максимум с учётом наступления новой стадии:
         max_days_for_current_stage += MAX_DAYS_AT_STAGE
@@ -1006,11 +993,11 @@ if __name__ == '__main__':
 
             # в конце каждого SLIDING_FREQUENCY дня (а также в первый и последний) отрисовывать слайды по распространённости генотипов:
             if current_day % SLIDING_FREQUENCY == 0 or current_day == 1 or current_day == MAX_DAYS_AT_STAGE * MAX_STAGES:
-                stats.draw_genes_distribution(current_day, create_autonomous_version=False)
+                stats.draw_genes_distribution(current_day)
 
             # в конце каждого SLIDING_FREQUENCY дня (а также в первый и последний) отрисовывать слайды по победам генотипов:
             if current_day % SLIDING_FREQUENCY == 0 or current_day == 1 or current_day == MAX_DAYS_AT_STAGE * MAX_STAGES:
-                stats.draw_genes_wins(current_day, create_autonomous_version=False)
+                stats.draw_genes_wins(current_day)
 
             current_day += 1
 
