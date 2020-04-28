@@ -5,183 +5,211 @@
 <script type='text/javascript' src='jquery-3.5.0.min.js'></script>
 
 <style>
-body {
-    background-color: #fff;
-	font-family: 'Calibri';
-    margin: 0px;
-}
+/* общие стили */
+	body {
+		background-color: #fff;
+		font-family: 'Calibri';
+		margin: 0px;
+	}
 
-p {
-    font-family: 'Calibri';
-    font-size: 1em;
-	padding: 0px;
-	margin: 0px;
-}
+	p {
+		font-family: 'Calibri';
+		font-size: 1em;
+		padding: 0px;
+		margin: 0px;
+	}
 
-.title_small {
-	font-weight: bold;
-	font-size: 1.2em;
-	padding-bottom: 12px;
-}
+	.title_small {
+		font-weight: bold;
+		font-size: 1.2em;
+		padding-bottom: 12px;
+	}
 
-#panel_main {
-    margin: 20px 12px 20px 12px;
-}
+	.text_values {
+		font-weight: bold;
+	}
 
-.text_values {
-    font-weight: bold;
-}
+	.report_table tr td {
+		font-family: 'Calibri';
+	}
 
-.report_table tr td {
-    font-family: 'Calibri';
-}
+	.td_padding {
+		padding-top: 16px;
+	}
 
-.td_padding {
-	padding-top: 16px;
-}
+	.right_p {
+		padding-right: 24px;
+	}
 
-.right_p {
-    padding-right: 24px;
-}
 
-.btn_change_day {
-	background-color: #74b9ff;
-	border: 1px solid #444;
-	cursor: pointer;
-	padding: 2px 4px 2px 4px;
-}.btn_change_day:hover { filter: brightness(1.2); }
+/* стиль элементов проигрывателя */
+	.btn_change_day {
+		background-color: #74b9ff;
+		border: 1px solid #444;
+		cursor: pointer;
+		padding: 2px 4px 2px 4px;
+	}.btn_change_day:hover { filter: brightness(1.2); }
 
-#input_range {
-	margin: 0px 5px 0px 5px;
-}
+	#input_range {
+		margin: 0px 5px 0px 5px;
+	}
 
-.text_btn {
-	background: #fff;
-    border: solid 3px #0984e3;
-    border-radius: 2px;
-    color: #0984e3;
-    cursor: pointer;
-    display: inline-block;
-    font-size: 1.1em;
-    outline: none;
-    padding: 4px 7px 4px 7px;
-    user-select: none;
-    -moz-user-select: none;
-    -webkit-user-select: none;
-}
-.text_btn:hover {
-	background: #0984e3;
-    box-shadow: 5px 5px 30px #888888;
-    color: #fff;
-}
+	.inputs {
+		background-color: #ffffff;
+		border: 1px solid #cecece;
+		font-size: 1em;
+		font-weight: bold;
+		outline-color: #0a30f0;
+		padding: 3px;
+	}
+	
+	.btn_blue {
+		background: #fff;
+		border: solid 3px #0984e3;
+		border-radius: 2px;
+		color: #0984e3;
+		cursor: pointer;
+		display: inline-block;
+		font-size: 1.1em;
+		outline: none;
+		padding: 4px 7px 4px 7px;
+		user-select: none;
+		-moz-user-select: none;
+		-webkit-user-select: none;
+	}.btn_blue:hover {
+		background: #0984e3;
+		box-shadow: 5px 5px 30px #888888;
+		color: #fff;
+	}
 
-.orange_btn {
-	border: solid 3px #d35400 !important;
-    color: #d35400 !important;
-}
-.orange_btn:hover {
-	background: #d35400 !important;
-    box-shadow: 5px 5px 30px #888888 !important;
-    color: #fff !important;
-}
+	.orange_btn {
+		border: solid 3px #d35400 !important;
+		color: #d35400 !important;
+	}.orange_btn:hover {
+		background: #d35400 !important;
+		box-shadow: 5px 5px 30px #888888 !important;
+		color: #fff !important;
+	}
 
-.inputs {
-	background-color: #ffffff;
-    border: 1px solid #cecece;
-    font-size: 1em;
-	font-weight: bold;
-    outline-color: #0a30f0;
-    padding: 3px;
-}
 
-.flex_CFsC {
-	display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-}
+/* шаблоны flex */
+	.flex_CFsC {
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-start;
+		align-items: center;
+	}
 
-.flex_RCC {
-	display: flex;
-	flex-direction: row;
-	justify-content: center;
-	align-items: center;
-}
+	.flex_RCC {
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		align-items: center;
+	}
 
-.flex_RLC {
-	display: flex;
-	flex-direction: row;
-	justify-content: flex-start;
-	align-items: center;
-}
+	.flex_RLC {
+		display: flex;
+		flex-direction: row;
+		justify-content: flex-start;
+		align-items: center;
+	}
+
 
 /* стили для слайдов */
-.g_cont_d {
-	display: none;
-    width: 100%;
-    height: 100%;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-	flex-wrap: nowrap;
-}
+	.div_for_slide {
+		margin-bottom: 50px;
+	}
 
-.g_cont_w {
-	display: none;
-    width: 100%;
-    height: 100%;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-	flex-wrap: nowrap;
-}
+	.g_cont_d {
+		display: none;
+		width: 100%;
+		height: 100%;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		flex-wrap: nowrap;
+	}
 
-.gen_f {
-    margin: 20px;
-}
+	.g_cont_w {
+		display: none;
+		width: 100%;
+		height: 100%;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		flex-wrap: nowrap;
+	}
 
-.gen {
-    display: inline-block;
-    margin: R_GSQUARE_MARGINpx;
-    width: R_GSQUARE_SIDEpx;
-    height: R_GSQUARE_SIDEpx;
-}.gen:hover { filter: brightness(1.2); }
+	.gen_f {
+		margin: 20px;
+	}
 
-.gen_legend {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-}.gen:hover { filter: brightness(1.2); }
+	.gen {
+		display: inline-block;
+		margin: R_GSQUARE_MARGINpx;
+		width: R_GSQUARE_SIDEpx;
+		height: R_GSQUARE_SIDEpx;
+	}.gen:hover { filter: brightness(1.2); }
 
-.gen_legend_one {
-	margin-right: 16px;
-}
+	.gen_legend {
+		display: inline-block;
+		width: 10px;
+		height: 10px;
+	}.gen:hover { filter: brightness(1.2); }
 
-.text_legend {
-	font-size: 0.9em;
-}
+	.gen_legend_one {
+		margin-right: 16px;
+	}
 
-.div_legend {
-	width: 80%;
-	display: flex;
-	flex-direction: row;
-	justify-content: flex-start;
-	align-items: center;
-}
+	.text_legend {
+		font-size: 0.9em;
+	}
 
-.tooltip_block {
-    background: white;
-    border: 1px solid rgb(230, 230, 230);
-    box-shadow: 1px 1px 4px rgba(15,15,15,.6);
-    color: rgb(82, 82, 82);
-    display: none;
-    font-size: 1.1em;
-	line-height: 16px;
-	padding: 8px;
-	position: absolute;
-	text-align: center;
-	z-index: 99;
-}
+	.div_legend {
+		width: 80%;
+		display: flex;
+		flex-direction: row;
+		justify-content: flex-start;
+		align-items: center;
+	}
+
+
+/* стиль для всплывающей подсказки */
+	.tooltip_block {
+		background: white;
+		border: 1px solid rgb(230, 230, 230);
+		box-shadow: 1px 1px 4px rgba(15,15,15,.6);
+		color: rgb(82, 82, 82);
+		display: none;
+		font-size: 1.1em;
+		line-height: 16px;
+		padding: 8px;
+		position: absolute;
+		text-align: center;
+		z-index: 99;
+	}
+
+
+/* стиль для кнопки с текстом */
+	.button_with_text {
+		background: #ffffff;
+		border: solid 2px #444444;
+		border-radius: 2px;
+		color: #444444;
+		cursor: pointer;
+		display: inline-block;
+		font-size: 0.9em;
+		outline: none;
+		padding: 2px 4px 2px 4px;
+		user-select: none;
+		-moz-user-select: none;
+		-webkit-user-select: none;
+	}.button_with_text:hover { filter: brightness(1.2); }
+
+	.button_activated {
+		background: #444444 !important;
+		color: #ffffff !important;
+	}
 </style>
 </head>
 
@@ -280,9 +308,9 @@ p {
 					<div><p class='title_small'>автоматическое воспроизведение</p></div>
 					<div>
 						<div class='flex_RCC'>
-							<div style='margin-right: 12px'><span class='text_btn' id='btn_run_from_begin'>запуск сначала</span></div>
-							<div style='margin-right: 12px'><span class='text_btn orange_btn' id='btn_pause'>пауза</span></div>
-							<div style='margin-right: 24px'><span class='text_btn' id='btn_run_from_current'>продолжить</span></div>
+							<div style='margin-right: 12px'><span class='btn_blue' id='btn_run_from_begin'>запуск сначала</span></div>
+							<div style='margin-right: 12px'><span class='btn_blue orange_btn' id='btn_pause'>пауза</span></div>
+							<div style='margin-right: 24px'><span class='btn_blue' id='btn_run_from_current'>продолжить</span></div>
 							
 							<div style='' align='left'>
 								<p style='font-size: 0.8em; margin: 0px; padding: 0px'>задержка между слайдами, ms</p>
@@ -297,10 +325,31 @@ p {
 		</div>
 		
 		<!-- контейнеры со слайдами, сгенерерированными объектом класса Stats -->
-		<div style='display: flex; flex-direction: row; justify-content: center; align-items: flex-start'>
+		<div>
+			<a class='button_with_text btns_slides_direction button_activated' id='btn_slides_horiz'>горизонтально</a>
+			<a class='button_with_text btns_slides_direction' id='btn_slides_verti'>вертикально</a>
+			<script>
+			$('.btns_slides_direction').click(function(){
+				
+				$('.btns_slides_direction').removeClass('button_activated');
+				$(this).addClass('button_activated');
+				
+				if( $(this).attr('id') == 'btn_slides_horiz' ){
+					$('#div_for_slides').css('flex-direction', 'row');
+					$('#div_for_slides').css('align-items', 'flex-start');
+				}
+				
+				if( $(this).attr('id') == 'btn_slides_verti' ){
+					$('#div_for_slides').css('flex-direction', 'column');
+					$('#div_for_slides').css('align-items', 'center');
+				}
+			});
+			</script>
+		</div>
+		<div id='div_for_slides' style='display: flex; flex-direction: row; justify-content: center; align-items: flex-start'>
 			
 			<!-- тут будут визуализациии области генотипов (с точки зрения их распространённости) -->
-			<div align='center' style='min-width: 640px'>
+			<div class='div_for_slide' align='center' style='min-width: 640px'>
 				<p class='title_small'>распространённость генотипов</p>
 				
 				<div style='margin-right: 5px' id='spawner_for_iframes_distribution'>
@@ -337,7 +386,7 @@ p {
 			</div>
 			
 			<!-- тут будут визуализациии области генотипов (с точки зрения их побед) -->
-			<div align='center' style='min-width: 640px'>
+			<div class='div_for_slide' align='center' style='min-width: 640px'>
 				<p class='title_small'>победы генотипов</p>
 				
 				<div style='margin-left: 5px' id='spawner_for_iframes_wins'>
